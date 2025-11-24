@@ -36,7 +36,6 @@ datasets:
       - "CrudeOil/csv/crude_oil_brent.csv"
       - "CrudeOil/json/crude_oil_brent.json"
       - "CrudeOil/parquet/crude_oil_brent.parquet"
-      - "CrudeOil/README.md"
 
   henry_hub_natural_gas:
     enabled: true
@@ -76,7 +75,6 @@ datasets:
       - "HenryHub/csv/henry_hub_natural_gas.csv"
       - "HenryHub/json/henry_hub_natural_gas.json"
       - "HenryHub/parquet/henry_hub_natural_gas.parquet"
-      - "HenryHub/README.md"
 
 # Upload Settings
 upload:
