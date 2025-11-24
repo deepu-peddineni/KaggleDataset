@@ -88,11 +88,6 @@ jobs:
           uv run python HenryHub/henry_hub_downloader.py
         continue-on-error: true
 
-      - name: List datasets
-        run: |
-          echo "📊 Available datasets:"
-          uv run python kaggle_uploader.py --list
-
       - name: Upload to Kaggle
         run: |
           echo "📤 Uploading datasets to Kaggle..."
