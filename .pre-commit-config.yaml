@@ -1,0 +1,121 @@
+# Pre-commit hooks configuration
+# Install: pip install pre-commit
+# Setup: pre-commit install
+# Run manually: pre-commit run --all-files
+
+repos:
+  # ============================================================================
+  # General file checks
+  # ============================================================================
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      # Prevent giant files from being committed
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+        description: Prevent giant files from being committed
+
+      # Detect files that would conflict in merge
+      - id: check-merge-conflict
+        description: Check for merge conflicts
+
+      # Check for files that parse as invalid YAML
+      - id: check-yaml
+        description: Check YAML files for errors
+
+      # Check for files that parse as invalid JSON
+      - id: check-json
+        description: Check JSON files for errors
+
+      # Attempt to load all toml files to check for errors
+      - id: check-toml
+        description: Check TOML files for errors
+
+      # Ensure files parse as valid Python
+      - id: check-ast
+        description: Check Python syntax
+
+      # Ensure files end with a newline character
+      - id: end-of-file-fixer
+        description: Fix files that don't end with a newline
+
+      # Trim trailing whitespace
+      - id: trailing-whitespace
+        description: Trim trailing whitespace
+        args: ['--markdown-linebreak-ext=md']
+
+      # Fix mixed line ending
+      - id: mixed-line-ending
+        description: Fix mixed line endings
+        args: ['--fix=lf']
+
+  # ============================================================================
+  # Detect Secrets & Sensitive Information
+  # ============================================================================
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        description: Detect secrets and sensitive information
+        exclude: ^(?:.*\.lock|poetry\.lock|Pipfile\.lock|\.secrets\.baseline)$
+
+  # ============================================================================
+  # Bandit - Security issue detector
+  # ============================================================================
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.9.2
+    hooks:
+      - id: bandit
+        args: ['-ll']
+        description: Find common security issues in Python code
+        exclude: ^(tests/|.*_test\.py)
+
+  # ============================================================================
+  # Ruff - Fast Python linter
+  # ============================================================================
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.6
+    hooks:
+      - id: ruff
+        description: Fast Python linter
+        args: [--fix]
+
+      - id: ruff-format
+        description: Python code formatter (Ruff)
+
+  # ============================================================================
+  # Python code quality & style
+  # ============================================================================
+  - repo: https://github.com/psf/black
+    rev: 25.11.0
+    hooks:
+      - id: black
+        description: Format Python code
+        language_version: python3
+
+# ============================================================================
+# General Configuration
+# ============================================================================
+default_language_version:
+  python: python3.13
+
+# Files to exclude from all hooks
+exclude: |
+  (?x)^(
+      \.venv/|
+      venv/|
+      env/|
+      \.git/|
+      \.mypy_cache/|
+      \.pytest_cache/|
+      __pycache__/|
+      dist/|
+      build/|
+      \.egg-info/|
+      data/|
+      models/
+  )
+
+# Minimum Python version required
+minimum_pre_commit_version: '2.15.0'

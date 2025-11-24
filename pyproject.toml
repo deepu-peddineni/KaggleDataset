@@ -1,0 +1,132 @@
+[project]
+name = "kaggledataset"
+version = "0.1.0"
+description = "Kaggle Dataset - Crude Oil Brent Price Data Downloader"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "duckdb>=1.4.2",
+    "memory-profiler>=0.61.0",
+    "mypy>=1.18.2",
+    "pandas>=2.3.3",
+    "polars>=1.35.2",
+    "psutil>=7.1.3",
+    "pyarrow>=22.0.0",
+    "requests>=2.32.5",
+    "ruff>=0.14.6",
+    "types-requests>=2.32.4.20250913",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pre-commit>=3.5.0",
+    "ruff>=0.1.13",
+    "black>=23.12.0",
+    "mypy>=1.7.1",
+    "pytest>=7.4.3",
+    "pytest-cov>=4.1.0",
+    "bandit>=1.7.5",
+    "detect-secrets>=1.4.0",
+]
+
+test = ["pytest>=7.4.3", "pytest-cov>=4.1.0"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+exclude = [
+    ".venv",
+    "venv",
+    "env",
+    ".git",
+    "__pycache__",
+    "dist",
+    "build",
+    ".egg-info",
+    ".mypy_cache",
+    ".pytest_cache",
+]
+
+[tool.ruff.lint]
+# Rules to enable
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # Pyflakes
+    "I",    # isort
+    "C",    # flake8-comprehensions
+    "B",    # flake8-bugbear
+    "UP",   # pyupgrade
+    "ARG",  # flake8-unused-arguments
+    "C4",   # flake8-comprehensions
+    "DTZ",  # flake8-datetimez
+    "T10",  # flake8-debugger
+    "EXE",  # flake8-executable
+    "ISC",  # flake8-implicit-str-concat
+    "ICN",  # flake8-import-conventions
+    "PIE",  # flake8-pie
+    "Q",    # flake8-quotes
+    "RET",  # flake8-return
+    "SIM",  # flake8-simplify
+    "SLOT", # flake8-slots
+    "RUF",  # Ruff-specific rules
+]
+
+# Rules to ignore
+ignore = [
+    "E501",   # line-too-long (handled by formatter)
+    "T201",   # print statements (CLI scripts need them)
+    "DTZ005", # datetime.now without tz (for CLI output)
+    "D100",   # Missing docstring in public module
+    "D104",   # Missing docstring in public package
+    "D105",   # Missing docstring in magic method
+    "D107",   # Missing docstring in __init__
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+"tests/*" = ["D100", "D101", "D102", "D103"]
+"*_test.py" = ["D100", "D101", "D102", "D103"]
+"CrudeOil/*" = ["T201", "DTZ005"]
+
+[tool.ruff.lint.isort]
+known-first-party = []
+known-third-party = ["polars", "requests"]
+lines-after-imports = 2
+
+[tool.ruff.lint.flake8-quotes]
+docstring-quotes = "double"
+inline-quotes = "double"
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
+exclude = [".venv", "venv", "env"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "-v --tb=short --strict-markers"

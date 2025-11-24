@@ -1,0 +1,11 @@
+# Codespell ignore words list
+# Add words that should not trigger spelling check warnings
+# FRED API parameter names
+fo
+nd
+fgsnd
+DCOILBRENTEU
+FRED
+stlouisfed
+kaggle
+polars
