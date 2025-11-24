@@ -1,89 +1,75 @@
+"""
+Henry Hub Natural Gas Spot Price Downloader & Processor
+
+Downloads daily natural gas prices from EIA (U.S. Energy Information Administration)
+via Excel file export, processes data, and exports to CSV, JSON, and Parquet formats.
+
+Data Source: https://www.eia.gov/dnav/ng/hist_xls/RNGWHHDd.xls
+Series: Henry Hub Natural Gas Spot Price - Daily
+Unit: USD per Million BTU
+"""
+
+import io
 from datetime import UTC, datetime
-from io import StringIO
 from pathlib import Path
 
+import pandas as pd
 import polars as pl
 import requests
 
 
-# URL for downloading Crude Oil Brent data
-BASE_URL = "https://fred.stlouisfed.org/graph/fredgraph.csv"
-
-# Query parameters
-QUERY_PARAMS = {
-    "bgcolor": "%23ebf3fb",
-    "chart_type": "line",
-    "drp": "0",
-    "fo": "open sans",
-    "graph_bgcolor": "%23ffffff",
-    "height": "450",
-    "mode": "fred",
-    "recession_bars": "off",
-    "txtcolor": "%23444444",
-    "ts": "12",
-    "tts": "12",
-    "width": "915",
-    "nt": "0",
-    "thu": "0",
-    "trc": "0",
-    "show_legend": "yes",
-    "show_axis_titles": "yes",
-    "show_tooltip": "yes",
-    "id": "DCOILBRENTEU",
-    "scale": "left",
-    "cosd": "1987-05-20",
-    "coed": "2025-11-17",
-    "line_color": "%230073e6",
-    "link_values": "false",
-    "line_style": "solid",
-    "mark_type": "none",
-    "mw": "3",
-    "lw": "3",
-    "ost": "-99999",
-    "oet": "99999",
-    "mma": "0",
-    "fml": "a",
-    "fq": "Daily",
-    "fam": "avg",
-    "fgst": "lin",
-    "fgsnd": "2020-02-01",
-    "line_index": "1",
-    "transformation": "lin",
-    "vintage_date": "2025-11-24",
-    "revision_date": "2025-11-24",
-    "nd": "1987-05-20",
-}
+# Henry Hub daily natural gas prices URL
+BASE_URL = "https://www.eia.gov/dnav/ng/hist_xls/RNGWHHDd.xls"
 
 
-def download_crude_oil_data():
-    """Download Crude Oil Brent data from FRED using GET request"""
+def download_henry_hub_data():
+    """Download Henry Hub Natural Gas data from EIA via Excel export"""
     try:
-        print("Downloading Crude Oil Brent data from FRED...")
-        response = requests.get(BASE_URL, params=QUERY_PARAMS, timeout=10)
+        print("Downloading Henry Hub Natural Gas data from EIA...")
+        response = requests.get(BASE_URL, timeout=30)
         response.raise_for_status()
-
         print(f"✓ Data downloaded successfully (Status: {response.status_code})")
-        return response.text
-    except requests.exceptions.RequestException as e:
+        return response.content
+    except requests.RequestException as e:
         print(f"✗ Error downloading data: {e}")
         return None
 
 
-def parse_csv_data(csv_text):
-    """Parse CSV text into a DataFrame and rename columns"""
+def parse_excel_data(excel_content):
+    """Parse Excel content and extract Henry Hub data"""
     try:
-        df = pl.read_csv(StringIO(csv_text))
-        # Remove any completely empty rows
-        df = df.drop_nulls()
+        # Read Excel file with pandas (better for XLS format)
+        df_pd = pd.read_excel(
+            io.BytesIO(excel_content), sheet_name="Data 1", engine="xlrd", header=None
+        )
 
-        # Rename columns: observation_date -> Date, DCOILBRENTEU -> Price
-        df = df.rename({"observation_date": "Date", "DCOILBRENTEU": "Price"})
+        # Skip header rows, data starts at row index 2 (0-indexed)
+        df_pd = df_pd.iloc[2:].reset_index(drop=True)
 
-        # Convert Date to datetime and add year, month, day columns with proper types
+        # Select first two columns (Date and Price)
+        df_pd = df_pd.iloc[:, [0, 1]]
+        df_pd.columns = ["Date", "Price"]
+
+        # Filter out header row if present
+        df_pd = df_pd[df_pd["Date"] != "Date"].reset_index(drop=True)
+
+        # Remove rows with NaN values
+        df_pd = df_pd.dropna()
+
+        # Convert datetime objects to strings, and handle numeric prices
+        df_pd["Date"] = pd.to_datetime(df_pd["Date"]).dt.strftime("%Y-%m-%d")
+        df_pd["Price"] = pd.to_numeric(df_pd["Price"], errors="coerce")
+        df_pd = df_pd.dropna()
+
+        # Convert to Polars for consistency with rest of codebase
+        df = pl.from_pandas(df_pd)
+
+        # Convert Date to date type and Price to float
         df = (
             df.with_columns(
                 [
                     pl.col("Date").str.to_date().alias("Date"),
+                    pl.col("Price").cast(pl.Float64).alias("Price"),
                 ]
             )
             .with_columns(
@@ -91,16 +77,15 @@ def parse_csv_data(csv_text):
                     pl.col("Date").dt.year().cast(pl.Int32).alias("Year"),
                     pl.col("Date").dt.month().cast(pl.Int8).alias("Month"),
                     pl.col("Date").dt.day().cast(pl.Int8).alias("Day"),
-                    pl.col("Price").cast(pl.Float64).alias("Price"),
                 ]
             )
             .select(["Date", "Price", "Year", "Month", "Day"])
         )
 
-        print(f"✓ CSV parsed successfully - {len(df)} rows")
+        print(f"✓ Excel parsed successfully - {len(df)} rows")
         return df
     except Exception as e:
-        print(f"✗ Error parsing CSV: {e}")
+        print(f"✗ Error parsing Excel: {e}")
         return None
 
 
@@ -157,7 +142,7 @@ def append_to_csv(csv_file_path, new_df):
 
 
 def export_data(df, output_dir):
-    """Export DataFrame to CSV, JSON, and Parquet formats in respective folders"""
+    """Export data to CSV, JSON, and Parquet formats"""
     output_path = Path(output_dir)
 
     # Create subdirectories for each format
@@ -170,9 +155,9 @@ def export_data(df, output_dir):
     parquet_dir.mkdir(parents=True, exist_ok=True)
 
     # Define file paths
-    csv_file = csv_dir / "crude_oil_brent.csv"
-    json_file = json_dir / "crude_oil_brent.json"
-    parquet_file = parquet_dir / "crude_oil_brent.parquet"
+    csv_file = csv_dir / "henry_hub_natural_gas.csv"
+    json_file = json_dir / "henry_hub_natural_gas.json"
+    parquet_file = parquet_dir / "henry_hub_natural_gas.parquet"
 
     try:
         # Export to CSV (with proper type handling for CSV format)
@@ -194,13 +179,13 @@ def export_data(df, output_dir):
 
         # Print folder structure
         print("\n✓ Folder Structure:")
-        print("  └── CrudeOil/")
+        print("  └── HenryHub/")
         print("      ├── csv/")
-        print(f"      │   └── crude_oil_brent.csv ({len(df)} rows)")
+        print(f"      │   └── henry_hub_natural_gas.csv ({len(df)} rows)")
         print("      ├── json/")
-        print(f"      │   └── crude_oil_brent.json ({len(df)} rows)")
+        print(f"      │   └── henry_hub_natural_gas.json ({len(df)} rows)")
         print("      └── parquet/")
-        print(f"          └── crude_oil_brent.parquet ({len(df)} rows)")
+        print(f"          └── henry_hub_natural_gas.parquet ({len(df)} rows)")
 
         return True
     except Exception as e:
@@ -222,7 +207,7 @@ def display_sample_data(df, n=10):
     print(f"Total Rows: {len(df)}")
     print(f"Columns: {df.columns}")
     print(f"Date Range: {df['Date'].min()} to {df['Date'].max()}")
-    print(f"Price Range: ${df['Price'].min():.2f} - ${df['Price'].max():.2f} per barrel")
+    print(f"Price Range: ${df['Price'].min():.2f} - ${df['Price'].max():.2f} per Million BTU")
     print(f"Data Types:\n{df.schema}")
     print("=" * 80 + "\n")
 
@@ -230,19 +215,19 @@ def display_sample_data(df, n=10):
 def main():
     """Main function to orchestrate the download and append process"""
     print("=" * 80)
-    print("Crude Oil Brent Data Downloader & Processor")
+    print("Henry Hub Natural Gas Spot Price Downloader & Processor")
     print("=" * 80)
     print(f"Timestamp: {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}")
     print()
 
     # Download data
-    csv_text = download_crude_oil_data()
-    if not csv_text:
+    excel_content = download_henry_hub_data()
+    if not excel_content:
         print("Exiting due to download failure")
         return
 
-    # Parse CSV and add date components
-    df = parse_csv_data(csv_text)
+    # Parse Excel data
+    df = parse_excel_data(excel_content)
     if df is None or df.is_empty():
         print("Exiting due to parsing failure")
         return
@@ -252,7 +237,7 @@ def main():
 
     # Define CSV file path (same directory as this script)
     script_dir = Path(__file__).parent
-    csv_file = script_dir / "crude_oil_brent.csv"
+    csv_file = script_dir / "henry_hub_natural_gas.csv"
 
     # Append to existing data and get updated dataset
     combined_df = append_to_csv(csv_file, df)
@@ -263,6 +248,7 @@ def main():
     print("=" * 80)
     export_data(combined_df, script_dir)
 
+    # Final status
     print()
     print("=" * 80)
     print("Process completed successfully!")
