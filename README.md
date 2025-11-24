@@ -48,18 +48,86 @@ A comprehensive Python project for downloading, processing, and exporting commod
 
 ## 🚀 Quick Start
 
-### Installation
+### Prerequisites
+
+- **Python 3.13+** (required)
+- **[uv](https://docs.astral.sh/uv/)** - Fast Python package installer and resolver (recommended)
+  - Install: `curl -LsSf https://astral.sh/uv/install.sh | sh` (macOS/Linux)
+  - Or: `powershell -Command "irm https://astral.sh/uv/install.ps1 | iex"` (Windows)
+
+### Installation with uv (Recommended)
 
 ```bash
 # Clone repository and navigate to directory
+git clone https://github.com/deepu-peddineni/KaggleDataset.git
+cd KaggleDataset
+
+# Create and activate virtual environment with uv
+uv venv
+
+# Activate the environment
+source .venv/bin/activate  # macOS/Linux
+# or
+.venv\Scripts\activate  # Windows
+
+# Install dependencies using uv (fast, deterministic)
+uv sync
+```
+
+### Installation with pip (Alternative)
+
+```bash
+# Clone repository and navigate to directory
+git clone https://github.com/deepu-peddineni/KaggleDataset.git
 cd KaggleDataset
 
 # Create and activate virtual environment
 python3.13 -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate  # macOS/Linux
 
 # Install dependencies
-pip install -r requirements.txt
+pip install -e .
+```
+
+### Package Management with uv
+
+#### Add Dependencies
+```bash
+# Add a new production dependency
+uv add polars>=1.35.0
+
+# Add a development-only dependency
+uv add --dev pytest
+
+# Add to specific group
+uv add --group dev pytest-cov
+```
+
+#### Update Dependencies
+```bash
+# Update all dependencies to latest compatible versions
+uv sync --upgrade
+
+# Update a specific package
+uv pip install --upgrade polars
+```
+
+#### View Dependency Tree
+```bash
+# Show all installed packages and their versions
+uv pip list
+
+# Show dependency details
+uv pip show polars
+```
+
+#### Lock File Management
+```bash
+# Generate/update uv.lock (committed to git)
+uv lock
+
+# Install from lock file (deterministic, reproducible builds)
+uv sync --frozen  # Error if lock file needs update
 ```
 
 ### Running the Data Pipeline
@@ -128,6 +196,13 @@ Process completed successfully!
 
 ```
 KaggleDataset/
+├── pyproject.toml                  # Project metadata & uv config
+├── uv.lock                         # Lock file (deterministic dependencies)
+├── .pre-commit-config.yaml         # Git hooks for code quality
+├── setup.cfg                       # Additional tool configuration
+├── .gitignore                      # Git exclusion patterns
+├── README.md                       # This file
+│
 ├── CrudeOil/
 │   ├── crude_oil_brent.py          # Main data downloader & processor script
 │   ├── crude_oil_brent.csv         # Data tracker (for duplicate detection)
@@ -148,11 +223,201 @@ KaggleDataset/
 │   └── parquet/
 │       └── henry_hub_natural_gas.parquet # Parquet export (7,252 rows, 28 KB)
 │
-├── .pre-commit-config.yaml         # Git hooks for code quality
-├── pyproject.toml                  # Project metadata & tool config
-├── setup.cfg                       # Additional tool configuration
-├── .gitignore                      # Git exclusion patterns
-└── README.md                       # This file
+└── .venv/                          # Virtual environment (uv venv)
+```
+
+## 🔧 Project Configuration with uv
+
+### pyproject.toml Overview
+
+```toml
+[project]
+name = "kaggledataset"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "polars>=1.35.2",      # DataFrame library
+    "pandas>=2.3.3",       # Data manipulation
+    "requests>=2.32.5",    # HTTP requests
+    "duckdb>=1.4.2",       # SQL queries on data
+    "pyarrow>=22.0.0",     # Parquet support
+    "xlrd>=2.0.2",         # XLS file reading
+    "openpyxl>=3.1.5",     # XLSX support
+    "fastexcel>=0.18.0",   # Fast Excel parsing
+    "ruff>=0.14.6",        # Formatter & linter
+    "mypy>=1.18.2",        # Type checker
+]
+
+[project.optional-dependencies]
+dev = [
+    "pre-commit>=3.5.0",   # Git hooks
+    "pytest>=7.4.3",       # Testing framework
+    "pytest-cov>=4.1.0",   # Coverage reports
+    "bandit>=1.7.5",       # Security analyzer
+]
+```
+
+### uv.lock - Dependency Lock File
+
+The `uv.lock` file ensures reproducible builds:
+
+```bash
+# Generated automatically by uv
+# Pinned versions prevent surprises in CI/CD and production
+uv sync --frozen  # Uses locked versions, fails if out of sync
+```
+
+Benefits:
+- ✓ Deterministic builds across machines
+- ✓ Exact version reproduction
+- ✓ Faster dependency resolution
+- ✓ Security: no version surprises
+
+## 🛠️ Common uv Workflows
+
+### Development Workflow
+
+```bash
+# Clone and setup with uv
+git clone https://github.com/deepu-peddineni/KaggleDataset.git
+cd KaggleDataset
+
+# Create virtual environment and install all dependencies
+uv venv
+source .venv/bin/activate
+uv sync
+
+# Install development dependencies too
+uv sync --all-groups
+```
+
+### Add New Dependency
+
+```bash
+# Add production dependency
+uv add requests-retry
+
+# Add development dependency
+uv add --group dev pytest-xdist
+
+# Add optional dependency group
+uv add --optional test pytest
+
+# Update lock file (done automatically)
+git add uv.lock pyproject.toml
+git commit -m "chore: add new dependencies"
+```
+
+### Upgrade Dependencies
+
+```bash
+# Upgrade all to latest compatible versions
+uv lock --upgrade
+
+# Upgrade specific package to latest
+uv lock --upgrade-package polars
+
+# Check for outdated packages
+uv pip list --outdated
+```
+
+### Run Scripts with uv
+
+```bash
+# Run Python script in project environment
+uv run python CrudeOil/crude_oil_brent.py
+
+# Run with specific Python version
+uv run --python 3.13 HenryHub/henry_hub_downloader.py
+
+# Run tests
+uv run pytest tests/
+
+# Run formatter
+uv run ruff format .
+
+# Run linter
+uv run ruff check . --fix
+```
+
+### Docker with uv
+
+```dockerfile
+FROM python:3.13-slim
+WORKDIR /app
+
+# Install uv
+RUN pip install uv
+
+# Copy project
+COPY pyproject.toml uv.lock ./
+
+# Install dependencies
+RUN uv sync --frozen --no-dev
+
+# Run application
+CMD ["uv", "run", "python", "CrudeOil/crude_oil_brent.py"]
+```
+
+### CI/CD with uv
+
+```yaml
+# .github/workflows/ci.yml
+name: CI
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: uv sync --all-groups
+      - run: uv run pytest
+      - run: uv run ruff format --check .
+      - run: uv run ruff check .
+```
+
+## 📊 uv vs pip - Comparison
+
+| Feature | pip | uv |
+|---------|-----|-----|
+| **Speed** | Slow (serial resolution) | 🚀 **10-100x faster** |
+| **Lock File** | ❌ No native support | ✓ `uv.lock` built-in |
+| **Deterministic Builds** | ❌ Requires pip-tools | ✓ Native |
+| **Dependency Resolution** | ❌ Backtracking only | ✓ Full SAT solver |
+| **Installation** | `pip install` | `uv add` |
+| **Update All** | Manual process | `uv lock --upgrade` |
+| **Memory Usage** | High | **Low** |
+| **Virtual Environments** | `venv` module | `uv venv` (integrated) |
+| **Reproducibility** | Difficult | **Easy with uv.lock** |
+| **Developer Experience** | Basic | **Rich output, progress bars** |
+
+### Quick Command Comparison
+
+```bash
+# Creating environment
+pip: python -m venv .venv
+uv:  uv venv
+
+# Installing dependencies
+pip: pip install -r requirements.txt
+uv:  uv sync
+
+# Adding package
+pip: pip install package && pip freeze > requirements.txt
+uv:  uv add package  # Auto-updates uv.lock
+
+# Upgrading all
+pip: pip install --upgrade pip && pip install -r requirements.txt --upgrade
+uv:  uv lock --upgrade
+
+# Running scripts
+pip: python script.py
+uv:  uv run python script.py
 ```
 
 ## 📖 Usage Examples
@@ -352,6 +617,76 @@ python CrudeOil/crude_oil_brent.py
 
 No API key required for FRED public data. All requests are unauthenticated GET requests.
 
+## ⚡ uv Best Practices
+
+### Project Setup Checklist
+
+```bash
+# ✓ Initialize with pyproject.toml
+uv venv
+source .venv/bin/activate
+uv sync
+
+# ✓ Commit lock file to git
+git add uv.lock
+git commit -m "chore: add uv.lock for reproducible builds"
+
+# ✓ Use specific version constraints
+uv add "polars>=1.35,<2.0"  # More specific than >=1.35
+
+# ✓ Separate dev dependencies
+uv add --group dev pytest
+
+# ✓ Pin Python version in pyproject.toml
+# requires-python = ">=3.13"
+```
+
+### Dependency Management Tips
+
+```bash
+# Check for security vulnerabilities
+uv pip audit
+
+# See dependency tree
+uv tree
+
+# Verify reproducibility
+uv sync --frozen --all-groups
+
+# Keep lock file up-to-date
+git diff uv.lock  # Review changes before committing
+```
+
+### Team Collaboration
+
+```bash
+# When pulling changes with new dependencies
+uv sync
+
+# When adding dependencies
+uv add package-name
+git add uv.lock pyproject.toml
+git push
+
+# CI should use --frozen for reproducibility
+uv sync --frozen --all-groups
+```
+
+### Performance Tips
+
+```bash
+# Use uv.lock for production deployments
+# Skip development dependencies
+uv sync --frozen
+
+# Cache dependencies in Docker
+# Place COPY pyproject.toml uv.lock before COPY .
+RUN uv sync --frozen
+
+# Use --no-binary for specific packages if needed
+uv add --no-binary package-name
+```
+
 ## 🐛 Troubleshooting
 
 ### Date Type Mismatch Error
@@ -374,6 +709,19 @@ pre-commit run --all-files --fix
 
 # Run specific hook
 pre-commit run ruff --all-files
+```
+
+### uv Installation Issues
+
+```bash
+# If uv command not found, reinstall
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Update uv to latest version
+uv self update
+
+# Clear uv cache if corrupted
+uv cache clean
 ```
 
 ## 📝 Script Internals
