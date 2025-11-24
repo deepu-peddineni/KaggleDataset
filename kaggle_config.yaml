@@ -1,0 +1,113 @@
+# Kaggle Dataset Upload Configuration
+# This file defines which datasets to upload and their Kaggle metadata
+
+datasets:
+  crude_oil_brent:
+    enabled: true
+    source_dir: "CrudeOil"
+    kaggle_dataset: "deepu-peddineni/crude-oil-brent-prices"
+    kaggle_slug: "crude-oil-brent-prices"
+    title: "Crude Oil Brent Daily Prices"
+    description: |
+      Daily crude oil Brent prices from the Federal Reserve Economic Data (FRED).
+
+      **Data Source:** FRED Series DCOILBRENTEU
+      **Time Range:** 2020-11-17 to Present
+      **Unit:** USD per barrel
+      **Update Frequency:** Weekly (automated)
+
+      **Files Included:**
+      - CSV: Universal format for easy access
+      - JSON: Preserves date types
+      - Parquet: Compressed columnar format for analytics
+
+      **Columns:**
+      - Date: Trading date
+      - Price: Daily closing price (USD/barrel)
+      - Year: Year extracted from date
+      - Month: Month (1-12)
+      - Day: Day (1-31)
+
+      Last Updated: Auto-updated weekly on Mondays
+    keywords: ["crude-oil", "brent", "energy", "commodity", "fred", "time-series"]
+    category: "Energy"
+    license: "CC0"
+    files:
+      - "CrudeOil/csv/crude_oil_brent.csv"
+      - "CrudeOil/json/crude_oil_brent.json"
+      - "CrudeOil/parquet/crude_oil_brent.parquet"
+      - "CrudeOil/README.md"
+
+  henry_hub_natural_gas:
+    enabled: true
+    source_dir: "HenryHub"
+    kaggle_dataset: "deepu-peddineni/henry-hub-natural-gas-prices"
+    kaggle_slug: "henry-hub-natural-gas-prices"
+    title: "Henry Hub Natural Gas Spot Prices"
+    description: |
+      Daily Henry Hub natural gas spot prices from the U.S. Energy Information Administration (EIA).
+
+      **Data Source:** EIA Henry Hub Natural Gas Spot Price - Daily
+      **Time Range:** 1997-01-07 to Present
+      **Unit:** USD per Million BTU
+      **Update Frequency:** Daily (automated upload weekly on Fridays)
+
+      **Files Included:**
+      - CSV: Universal format for easy access
+      - JSON: Preserves date types
+      - Parquet: Compressed columnar format for analytics
+
+      **Columns:**
+      - Date: Trading date
+      - Price: Daily spot price (USD/Million BTU)
+      - Year: Year extracted from date
+      - Month: Month (1-12)
+      - Day: Day (1-31)
+
+      **Statistics:**
+      - Total Records: 7,252+
+      - Price Range: $1.05 - $23.86
+
+      Last Updated: Auto-updated weekly on Fridays
+    keywords: ["natural-gas", "energy", "henry-hub", "commodity", "eia", "time-series"]
+    category: "Energy"
+    license: "CC0"
+    files:
+      - "HenryHub/csv/henry_hub_natural_gas.csv"
+      - "HenryHub/json/henry_hub_natural_gas.json"
+      - "HenryHub/parquet/henry_hub_natural_gas.parquet"
+      - "HenryHub/README.md"
+
+# Upload Settings
+upload:
+  # Create dataset if it doesn't exist (first time only)
+  create_if_missing: true
+
+  # Make dataset public
+  is_public: true
+
+  # Quiet mode (less verbose output)
+  quiet: false
+
+# Instructions for adding new datasets:
+# 1. Create a new entry under 'datasets:'
+# 2. Set 'enabled: true'
+# 3. Specify source directory and Kaggle dataset slug
+# 4. Add descriptive metadata (title, description, keywords)
+# 5. List files to upload (relative paths from project root)
+# 6. The CI/CD workflow will automatically handle the upload
+
+# Example new dataset format:
+# my_new_dataset:
+#   enabled: false  # Set to true to activate
+#   source_dir: "MyDataset"
+#   kaggle_dataset: "your-username/my-dataset-slug"
+#   kaggle_slug: "my-dataset-slug"
+#   title: "My Dataset Title"
+#   description: "Detailed description here"
+#   keywords: ["keyword1", "keyword2"]
+#   category: "Category"
+#   license: "CC0"
+#   files:
+#     - "MyDataset/csv/data.csv"
+#     - "MyDataset/parquet/data.parquet"

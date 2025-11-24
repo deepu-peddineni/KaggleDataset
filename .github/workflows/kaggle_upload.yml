@@ -1,0 +1,204 @@
+name: Weekly Kaggle Dataset Upload
+
+on:
+  schedule:
+    # Every Monday at 2 AM UTC (after Crude Oil update - typically Friday)
+    - cron: "0 2 * * 1"
+    # Every Friday at 2 AM UTC (after Henry Hub daily data collection)
+    - cron: "0 2 * * 5"
+
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      dataset:
+        description: "Dataset to upload (leave empty for all enabled)"
+        required: false
+        type: string
+
+  # Also run on successful data download (optional)
+  workflow_run:
+    workflows: ["Download Latest Data"]
+    types: [completed]
+    branches: [master]
+
+jobs:
+  upload_to_kaggle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Set up Kaggle credentials
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+        run: |
+          mkdir -p ~/.kaggle
+          cat > ~/.kaggle/kaggle.json <<EOF
+          {
+            "username": "$KAGGLE_USERNAME",
+            "key": "$KAGGLE_KEY"
+          }
+          EOF
+          chmod 600 ~/.kaggle/kaggle.json
+          echo "✓ Kaggle credentials configured"
+
+      - name: Determine which datasets to upload
+        id: datasets
+        run: |
+          if [ "${{ github.event.schedule }}" == "0 2 * * 1" ]; then
+            echo "day=Monday"
+            echo "datasets=crude_oil_brent"
+            echo "message=Uploading Crude Oil data (Monday)"
+          elif [ "${{ github.event.schedule }}" == "0 2 * * 5" ]; then
+            echo "day=Friday"
+            echo "datasets=henry_hub_natural_gas"
+            echo "message=Uploading Henry Hub Natural Gas data (Friday)"
+          else
+            echo "day=Manual"
+            echo "datasets=${{ github.event.inputs.dataset }}"
+            echo "message=Manual upload triggered"
+          fi
+
+      - name: Install dependencies
+        run: |
+          uv sync
+
+      - name: Download latest data
+        run: |
+          echo "📥 Downloading latest data..."
+          uv run python CrudeOil/crude_oil_brent.py
+          uv run python HenryHub/henry_hub_downloader.py
+        continue-on-error: true
+
+      - name: List datasets
+        run: |
+          echo "📊 Available datasets:"
+          uv run python kaggle_uploader.py --list
+
+      - name: Upload to Kaggle
+        run: |
+          echo "📤 Uploading datasets to Kaggle..."
+          if [ -z "${{ github.event.inputs.dataset }}" ]; then
+            uv run python kaggle_uploader.py
+          else
+            uv run python kaggle_uploader.py --dataset "${{ github.event.inputs.dataset }}"
+          fi
+
+      - name: Verify upload
+        run: |
+          echo "✓ Upload completed successfully"
+          echo "Datasets available at: https://kaggle.com/datasets/deepu-peddineni"
+
+      - name: Create deployment annotation
+        if: success()
+        run: |
+          cat > /tmp/upload_summary.txt <<EOF
+          Upload Summary
+          ==============
+          Timestamp: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          Datasets: ${{ steps.datasets.outputs.datasets }}
+          Status: Success
+          EOF
+          cat /tmp/upload_summary.txt
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "❌ Upload failed!"
+          echo "Check the logs above for details"
+          exit 1
+
+  # Separate jobs for different datasets (optional - for better visibility)
+  upload_crude_oil:
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 2 * * 1' || (github.event_name == 'workflow_dispatch' && contains(github.event.inputs.dataset, 'crude'))
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Configure Kaggle
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+        run: |
+          mkdir -p ~/.kaggle
+          cat > ~/.kaggle/kaggle.json <<EOF
+          {
+            "username": "$KAGGLE_USERNAME",
+            "key": "$KAGGLE_KEY"
+          }
+          EOF
+          chmod 600 ~/.kaggle/kaggle.json
+
+      - name: Upload Crude Oil Dataset
+        run: |
+          uv sync
+          uv run python kaggle_uploader.py --dataset crude_oil_brent
+
+  upload_henry_hub:
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 2 * * 5' || (github.event_name == 'workflow_dispatch' && contains(github.event.inputs.dataset, 'henry'))
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Configure Kaggle
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+        run: |
+          mkdir -p ~/.kaggle
+          cat > ~/.kaggle/kaggle.json <<EOF
+          {
+            "username": "$KAGGLE_USERNAME",
+            "key": "$KAGGLE_KEY"
+          }
+          EOF
+          chmod 600 ~/.kaggle/kaggle.json
+
+      - name: Upload Henry Hub Dataset
+        run: |
+          uv sync
+          uv run python kaggle_uploader.py --dataset henry_hub_natural_gas
