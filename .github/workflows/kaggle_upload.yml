@@ -92,15 +92,15 @@ jobs:
         run: |
           echo "📤 Uploading datasets to Kaggle..."
           if [ -z "${{ github.event.inputs.dataset }}" ]; then
-            uv run python kaggle_uploader.py
+            uv run python kaggle_uploader.py --yes
           else
-            uv run python kaggle_uploader.py --dataset "${{ github.event.inputs.dataset }}"
+            uv run python kaggle_uploader.py --dataset "${{ github.event.inputs.dataset }}" --yes
           fi
 
       - name: Verify upload
         run: |
           echo "✓ Upload completed successfully"
-          echo "Datasets available at: https://kaggle.com/datasets/deepu-peddineni"
+          echo "Datasets available at: https://kaggle.com/datasets/lakshmi2305"
 
       - name: Create deployment annotation
         if: success()
@@ -157,8 +157,8 @@ jobs:
 
       - name: Upload Crude Oil Dataset
         run: |
-          uv sync
-          uv run python kaggle_uploader.py --dataset crude_oil_brent
+          uv sync --all-groups --refresh
+          uv run python kaggle_uploader.py --dataset crude_oil_brent --yes
 
   upload_henry_hub:
     runs-on: ubuntu-latest
@@ -195,5 +195,5 @@ jobs:
 
       - name: Upload Henry Hub Dataset
         run: |
-          uv sync
-          uv run python kaggle_uploader.py --dataset henry_hub_natural_gas
+          uv sync --all-groups --refresh
+          uv run python kaggle_uploader.py --dataset henry_hub_natural_gas --yes
