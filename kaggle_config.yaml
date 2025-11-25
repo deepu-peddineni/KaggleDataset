@@ -34,7 +34,7 @@ datasets:
     category: "Energy"
     license: "MIT"
     updateFrequency: "weekly"
-    image: "CrudeOil/assets/crude_oil_thumbnail.svg"
+    image: "CrudeOil/assets/crude_oil_thumbnail.png"
     file_info:
       "CrudeOil/csv/crude_oil_brent.csv":
         description: "CSV export of Brent daily prices (Date, Price, Year, Month, Day)"
@@ -94,7 +94,7 @@ datasets:
     category: "Energy"
     license: "MIT"
     updateFrequency: "weekly"
-    image: "HenryHub/assets/henry_hub_thumbnail.svg"
+    image: "HenryHub/assets/henry_hub_thumbnail.png"
     file_info:
       "HenryHub/csv/henry_hub_natural_gas.csv":
         description: "CSV export of Henry Hub daily spot prices (Date, Price, Year, Month, Day)"
