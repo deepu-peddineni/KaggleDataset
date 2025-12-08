@@ -205,6 +205,41 @@ class KaggleUploader:
             )
         print(f"✓ Dry run completed for: {dataset_name}")
 
+    def _prepare_upload_folder(
+        self,
+        tmpdir_path: Path,
+        file_paths: list[Path],
+        image_path: Path | None,
+        metadata: dict,
+        config: dict,
+    ) -> Path:
+        """Copy files (and optional image) into `tmpdir_path`, update metadata resources, write metadata file, and return its path."""
+        # Copy files
+        for file_path in file_paths:
+            dest = tmpdir_path / file_path.name
+            dest.write_bytes(file_path.read_bytes())
+
+        # Copy image if present
+        if image_path:
+            img_dest = tmpdir_path / image_path.name
+            img_dest.write_bytes(image_path.read_bytes())
+            # Ensure image is represented in resources (if not already)
+            existing_paths = [r.get("path") for r in metadata.get("resources", [])]
+            if image_path.name not in existing_paths:
+                metadata.setdefault("resources", []).append(
+                    {
+                        "path": image_path.name,
+                        "description": config.get("subtitle", "Thumbnail image"),
+                    }
+                )
+
+        # Write dataset metadata
+        metadata_file = tmpdir_path / "dataset-metadata.json"
+        with open(metadata_file, "w") as f:
+            json.dump(metadata, f, indent=2)
+
+        return metadata_file
+
     def upload_dataset(self, dataset_name: str | None = None) -> None:
         """Upload dataset(s) to Kaggle."""
         datasets = self.config.get("datasets", {})
@@ -325,70 +360,132 @@ class KaggleUploader:
             print(f"✗ Upload failed: {e}")
             return
 
+    def _get_owner(self, config: dict[str, Any]) -> str:
+        """Determine dataset owner with multiple fallbacks."""
+        # 1. dataset-specific `kaggle_owner`
+        owner = config.get("kaggle_owner")
+        if owner:
+            return owner
+
+        # 2. full `kaggle_dataset` (extract user from 'user/slug')
+        kaggle_dataset_full = config.get("kaggle_dataset")
+        if kaggle_dataset_full and "/" in kaggle_dataset_full:
+            return kaggle_dataset_full.split("/")[0]
+
+        # 3. global upload owner (upload.owner)
+        owner = self.config.get("upload", {}).get("owner")
+        if owner:
+            return owner
+
+        # 4. env var KAGGLE_USERNAME
+        owner = os.environ.get("KAGGLE_USERNAME")
+        if owner:
+            return owner
+
+        # 5. username field from ~/.kaggle/kaggle.json
+        try:
+            kaggle_file = Path.home() / ".kaggle" / "kaggle.json"
+            if kaggle_file.exists():
+                with open(kaggle_file) as kf:
+                    data = json.load(kf)
+                    owner = data.get("username") or data.get("user")
+                    if owner:
+                        return owner
+        except Exception:
+            pass
+
+        print(
+            "✗ Could not determine Kaggle owner — set `kaggle_owner` in dataset config or export KAGGLE_USERNAME or add upload.owner"
+        )
+        return ""
+
+    def _build_resource_schema(self, config: dict[str, Any]) -> dict | None:
+        """Build schema for resource fields."""
+        columns = config.get("columns", [])
+        if not columns:
+            return None
+
+        fields = []
+        for idx, col in enumerate(columns):
+            field = {
+                "order": idx,
+                "name": col.get("name", ""),
+                "type": col.get("type", "string"),
+                "description": col.get("description", ""),
+            }
+            fields.append(field)
+
+        return {"fields": fields}
+
+    def _build_resources(self, files: list[str], dataset_name: str, config: dict[str, Any]) -> list:
+        """Build resources list with file descriptions and schema."""
+        resources = []
+        schema = self._build_resource_schema(config)
+
+        for full_path in files:
+            fname = Path(full_path).name
+            file_desc = (
+                config.get("file_info", {}).get(full_path, {}).get("description")
+                or config.get("file_info", {}).get(fname, {}).get("description")
+                or f"{dataset_name} - {fname}"
+            )
+
+            resource = {
+                "path": fname,
+                "description": file_desc,
+            }
+
+            if schema:
+                resource["schema"] = schema
+
+            resources.append(resource)
+
+        return resources
+
     def _create_metadata(self, dataset_name: str, config: dict[str, Any]) -> dict[str, Any]:
         """Create Kaggle dataset metadata."""
         files = config.get("files", [])
-        file_names = [Path(f).name for f in files]
-        # Determine owner with multiple fallbacks:
-        # 1. dataset-specific `kaggle_owner`
-        # 2. full `kaggle_dataset` (extract user from 'user/slug')
-        # 3. global upload owner (upload.owner)
-        # 4. env var KAGGLE_USERNAME
-        # 5. username field from ~/.kaggle/kaggle.json
-        owner = config.get("kaggle_owner")
-        if not owner:
-            kaggle_dataset_full = config.get("kaggle_dataset")
-            if kaggle_dataset_full and "/" in kaggle_dataset_full:
-                owner = kaggle_dataset_full.split("/")[0]
+        owner = self._get_owner(config)
 
-        if not owner:
-            owner = self.config.get("upload", {}).get("owner") or os.environ.get("KAGGLE_USERNAME")
-
-        if not owner:
-            try:
-                kaggle_file = Path.home() / ".kaggle" / "kaggle.json"
-                if kaggle_file.exists():
-                    with open(kaggle_file) as kf:
-                        data = json.load(kf)
-                        owner = data.get("username") or data.get("user") or owner
-            except Exception:
-                pass
-
-        if not owner:
-            print(
-                "✗ Could not determine Kaggle owner — set `kaggle_owner` in dataset config or export KAGGLE_USERNAME or add upload.owner"
-            )
-            owner = ""
-
-        return {
-            "title": config.get("title", dataset_name),
-            "subtitle": config.get("subtitle"),
-            "description": config.get("description", ""),
-            "image": config.get("image"),
-            "id": f"{owner}/{config.get('kaggle_slug')}",
-            "licenses": [{"name": config.get("license", "CC0")}],
-            "keywords": config.get("keywords", []),
-            # Include file-level descriptions when present in config.file_info
-            "resources": [
-                {
-                    "path": fname,
-                    "description": config.get("file_info", {})
-                    .get(str(Path(config.get("source_dir", "")) + "/" + fname), {})
-                    .get("description")
-                    or config.get("file_info", {}).get(fname, {}).get("description")
-                    or config.get("title", dataset_name),
-                }
-                for fname in file_names
-            ],
-            # Column descriptions (Kaggle expects a list of {name, description})
-            "columns": config.get("columns", []),
-            # Optional update frequency
-            "updateFrequency": config.get("updateFrequency"),
-            "datasetId": None,
-            "ownerRef": owner,
-            "datasetSlug": config.get("kaggle_slug"),
-            "isPrivate": not self.config.get("upload", {}).get("is_public", True),
+        # Map license strings to Kaggle format
+        license_str = config.get("license", "CC0-1.0")
+        license_map = {
+            "MIT": "CC0-1.0",
+            "CC0": "CC0-1.0",
         }
+        license_name = license_map.get(license_str, license_str)
+
+        # Build resources with file descriptions and schema
+        resources = self._build_resources(files, dataset_name, config)
+
+        metadata = {
+            "title": config.get("title", dataset_name),
+            "id": f"{owner}/{config.get('kaggle_slug')}",
+            "licenses": [{"name": license_name}],
+        }
+
+        # Add optional fields only if they exist
+        subtitle = config.get("subtitle")
+        if subtitle:
+            metadata["subtitle"] = subtitle
+
+        description = config.get("description")
+        if description:
+            metadata["description"] = description
+
+        keywords = config.get("keywords", [])
+        if keywords:
+            metadata["keywords"] = keywords
+
+        if resources:
+            metadata["resources"] = resources
+
+        # Add update frequency if specified
+        update_freq = config.get("updateFrequency")
+        if update_freq:
+            metadata["updateFrequency"] = update_freq
+
+        return metadata
 
 
 def main() -> None:
