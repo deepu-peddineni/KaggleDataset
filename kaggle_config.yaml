@@ -8,6 +8,7 @@ datasets:
     kaggle_dataset: "lakshmi2305/crude-oil-brent-prices"
     kaggle_slug: "crude-oil-brent-prices"
     title: "Crude Oil Brent Daily Prices"
+    subtitle: "Daily Brent crude oil spot prices from FRED"
     description: |
       Daily crude oil Brent prices from the Federal Reserve Economic Data (FRED).
 
@@ -31,7 +32,32 @@ datasets:
       Last Updated: Auto-updated weekly on Mondays
     keywords: ["crude-oil", "brent", "energy", "commodity", "fred", "time-series"]
     category: "Energy"
-    license: "CC0"
+    license: "CC0-1.0"
+    updateFrequency: "weekly"
+    image: "CrudeOil/assets/crude_oil_thumbnail.png"
+    file_info:
+      "CrudeOil/csv/crude_oil_brent.csv":
+        description: "CSV export of Brent daily prices (Date, Price, Year, Month, Day)"
+      "CrudeOil/json/crude_oil_brent.json":
+        description: "JSON export containing date and price records"
+      "CrudeOil/parquet/crude_oil_brent.parquet":
+        description: "Parquet export for efficient analytics"
+    columns:
+      - name: "Date"
+        type: "datetime"
+        description: "Trading date (YYYY-MM-DD)"
+      - name: "Price"
+        type: "numeric"
+        description: "Daily closing price in USD per barrel"
+      - name: "Year"
+        type: "integer"
+        description: "Year extracted from Date"
+      - name: "Month"
+        type: "integer"
+        description: "Month number (1-12)"
+      - name: "Day"
+        type: "integer"
+        description: "Day of month (1-31)"
     files:
       - "CrudeOil/csv/crude_oil_brent.csv"
       - "CrudeOil/json/crude_oil_brent.json"
@@ -43,6 +69,7 @@ datasets:
     kaggle_dataset: "lakshmi2305/henry-hub-natural-gas-prices"
     kaggle_slug: "henry-hub-natural-gas-prices"
     title: "Henry Hub Natural Gas Spot Prices"
+    subtitle: "Daily natural gas spot prices from Henry Hub"
     description: |
       Daily Henry Hub natural gas spot prices from the U.S. Energy Information Administration (EIA).
 
@@ -70,7 +97,32 @@ datasets:
       Last Updated: Auto-updated weekly on Fridays
     keywords: ["natural-gas", "energy", "henry-hub", "commodity", "eia", "time-series"]
     category: "Energy"
-    license: "CC0"
+    license: "CC0-1.0"
+    updateFrequency: "weekly"
+    image: "HenryHub/assets/henry_hub_thumbnail.png"
+    file_info:
+      "HenryHub/csv/henry_hub_natural_gas.csv":
+        description: "CSV export of Henry Hub daily spot prices (Date, Price, Year, Month, Day)"
+      "HenryHub/json/henry_hub_natural_gas.json":
+        description: "JSON export containing date and price records"
+      "HenryHub/parquet/henry_hub_natural_gas.parquet":
+        description: "Parquet export for efficient analytics"
+    columns:
+      - name: "Date"
+        type: "datetime"
+        description: "Trading date (YYYY-MM-DD)"
+      - name: "Price"
+        type: "numeric"
+        description: "Daily spot price in USD per Million BTU"
+      - name: "Year"
+        type: "integer"
+        description: "Year extracted from Date"
+      - name: "Month"
+        type: "integer"
+        description: "Month number (1-12)"
+      - name: "Day"
+        type: "integer"
+        description: "Day of month (1-31)"
     files:
       - "HenryHub/csv/henry_hub_natural_gas.csv"
       - "HenryHub/json/henry_hub_natural_gas.json"
