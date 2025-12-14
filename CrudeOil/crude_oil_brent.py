@@ -1,89 +1,63 @@
+import io
 from datetime import UTC, datetime
-from io import StringIO
 from pathlib import Path
 
+import pandas as pd
 import polars as pl
 import requests
 
 
-# URL for downloading Crude Oil Brent data
-BASE_URL = "https://fred.stlouisfed.org/graph/fredgraph.csv"
-
-# Query parameters
-QUERY_PARAMS = {
-    "bgcolor": "%23ebf3fb",
-    "chart_type": "line",
-    "drp": "0",
-    "fo": "open sans",
-    "graph_bgcolor": "%23ffffff",
-    "height": "450",
-    "mode": "fred",
-    "recession_bars": "off",
-    "txtcolor": "%23444444",
-    "ts": "12",
-    "tts": "12",
-    "width": "915",
-    "nt": "0",
-    "thu": "0",
-    "trc": "0",
-    "show_legend": "yes",
-    "show_axis_titles": "yes",
-    "show_tooltip": "yes",
-    "id": "DCOILBRENTEU",
-    "scale": "left",
-    "cosd": "1987-05-20",
-    "coed": "2025-11-17",
-    "line_color": "%230073e6",
-    "link_values": "false",
-    "line_style": "solid",
-    "mark_type": "none",
-    "mw": "3",
-    "lw": "3",
-    "ost": "-99999",
-    "oet": "99999",
-    "mma": "0",
-    "fml": "a",
-    "fq": "Daily",
-    "fam": "avg",
-    "fgst": "lin",
-    "fgsnd": "2020-02-01",
-    "line_index": "1",
-    "transformation": "lin",
-    "vintage_date": "2025-11-24",
-    "revision_date": "2025-11-24",
-    "nd": "1987-05-20",
-}
+# EIA Excel URL for Crude Oil Brent
+BASE_URL = "https://www.eia.gov/dnav/pet/hist_xls/RBRTEd.xls"
 
 
 def download_crude_oil_data():
-    """Download Crude Oil Brent data from FRED using GET request"""
+    """Download Crude Oil Brent data from EIA (Excel)"""
     try:
-        print("Downloading Crude Oil Brent data from FRED...")
-        response = requests.get(BASE_URL, params=QUERY_PARAMS, timeout=10)
+        print("Downloading Crude Oil Brent data from EIA...")
+        response = requests.get(BASE_URL, timeout=30)
         response.raise_for_status()
-
         print(f"✓ Data downloaded successfully (Status: {response.status_code})")
-        return response.text
-    except requests.exceptions.RequestException as e:
+        return response.content
+    except requests.RequestException as e:
         print(f"✗ Error downloading data: {e}")
         return None
 
 
-def parse_csv_data(csv_text):
-    """Parse CSV text into a DataFrame and rename columns"""
+def parse_excel_data(excel_content):
+    """Parse Excel content and extract Crude Oil Brent data"""
     try:
-        df = pl.read_csv(StringIO(csv_text))
-        # Remove any completely empty rows
-        df = df.drop_nulls()
+        # Read Excel file with pandas (safer for XLS format)
+        df_pd = pd.read_excel(
+            io.BytesIO(excel_content), sheet_name="Data 1", engine="xlrd", header=None
+        )
 
-        # Rename columns: observation_date -> Date, DCOILBRENTEU -> Price
-        df = df.rename({"observation_date": "Date", "DCOILBRENTEU": "Price"})
+        # Skip header rows, data usually starts at row index 2
+        df_pd = df_pd.iloc[2:].reset_index(drop=True)
 
-        # Convert Date to datetime and add year, month, day columns with proper types
+        # Select first two columns (Date and Price)
+        df_pd = df_pd.iloc[:, [0, 1]]
+        df_pd.columns = ["Date", "Price"]
+
+        # Filter out any header-like rows
+        df_pd = df_pd[df_pd["Date"] != "Date"].reset_index(drop=True)
+
+        # Remove rows with NaN values
+        df_pd = df_pd.dropna()
+
+        # Convert datetime and numeric types
+        df_pd["Date"] = pd.to_datetime(df_pd["Date"]).dt.strftime("%Y-%m-%d")
+        df_pd["Price"] = pd.to_numeric(df_pd["Price"], errors="coerce")
+        df_pd = df_pd.dropna()
+
+        # Convert to Polars
+        df = pl.from_pandas(df_pd)
+
         df = (
             df.with_columns(
                 [
                     pl.col("Date").str.to_date().alias("Date"),
+                    pl.col("Price").cast(pl.Float64).alias("Price"),
                 ]
             )
             .with_columns(
@@ -91,16 +65,15 @@ def parse_csv_data(csv_text):
                     pl.col("Date").dt.year().cast(pl.Int32).alias("Year"),
                     pl.col("Date").dt.month().cast(pl.Int8).alias("Month"),
                     pl.col("Date").dt.day().cast(pl.Int8).alias("Day"),
-                    pl.col("Price").cast(pl.Float64).alias("Price"),
                 ]
             )
             .select(["Date", "Price", "Year", "Month", "Day"])
         )
 
-        print(f"✓ CSV parsed successfully - {len(df)} rows")
+        print(f"✓ Excel parsed successfully - {len(df)} rows")
         return df
     except Exception as e:
-        print(f"✗ Error parsing CSV: {e}")
+        print(f"✗ Error parsing Excel: {e}")
         return None
 
 
@@ -117,6 +90,17 @@ def append_to_csv(csv_file_path, new_df):
             existing_df = pl.read_csv(csv_path)
             # Ensure Date column is cast to Date type for comparison
             existing_df = existing_df.with_columns(pl.col("Date").str.to_date())
+
+            # Normalize column types to match new data (prevent type mismatch)
+            if "Price" in existing_df.columns:
+                existing_df = existing_df.with_columns(pl.col("Price").cast(pl.Float64))
+            if "Year" in existing_df.columns:
+                existing_df = existing_df.with_columns(pl.col("Year").cast(pl.Int32))
+            if "Month" in existing_df.columns:
+                existing_df = existing_df.with_columns(pl.col("Month").cast(pl.Int8))
+            if "Day" in existing_df.columns:
+                existing_df = existing_df.with_columns(pl.col("Day").cast(pl.Int8))
+
             print(f"✓ Existing file loaded - {len(existing_df)} rows")
 
             # Get existing dates
@@ -235,14 +219,14 @@ def main():
     print(f"Timestamp: {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}")
     print()
 
-    # Download data
-    csv_text = download_crude_oil_data()
-    if not csv_text:
+    # Download data (Excel)
+    excel_content = download_crude_oil_data()
+    if not excel_content:
         print("Exiting due to download failure")
         return
 
-    # Parse CSV and add date components
-    df = parse_csv_data(csv_text)
+    # Parse Excel and add date components
+    df = parse_excel_data(excel_content)
     if df is None or df.is_empty():
         print("Exiting due to parsing failure")
         return
