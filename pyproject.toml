@@ -20,6 +20,7 @@ dependencies = [
     "ruff>=0.14.6",
     "types-requests>=2.32.4.20250913",
     "xlrd>=2.0.2",
+    "ty>=0.0.7",
 ]
 
 [project.optional-dependencies]
