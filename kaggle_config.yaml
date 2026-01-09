@@ -5,6 +5,9 @@ datasets:
   crude_oil_brent:
     enabled: true
     source_dir: "CrudeOil"
+    pre_upload:
+      script: "CrudeOil/crude_oil_brent.py"
+      allow_fail: false
     kaggle_dataset: "lakshmi2305/crude-oil-brent-prices"
     kaggle_slug: "crude-oil-brent-prices"
     title: "Crude Oil Brent Daily Prices"
@@ -66,6 +69,9 @@ datasets:
   henry_hub_natural_gas:
     enabled: true
     source_dir: "HenryHub"
+    pre_upload:
+      script: "HenryHub/henry_hub_downloader.py"
+      allow_fail: false
     kaggle_dataset: "lakshmi2305/henry-hub-natural-gas-prices"
     kaggle_slug: "henry-hub-natural-gas-prices"
     title: "Henry Hub Natural Gas Spot Prices"
