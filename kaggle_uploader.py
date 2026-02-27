@@ -17,6 +17,7 @@ import os
 import subprocess
 import sys
 import tempfile
+import time
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -75,24 +76,64 @@ class KaggleUploader:
         """Run `func` while capturing stderr and filter known noisy Kaggle client warnings.
 
         Returns the value returned by `func`. If `func` raises, the exception is propagated.
+        Captures both stdout and stderr to handle Kaggle API file upload messages.
         """
-        buf = io.StringIO()
-        with contextlib.redirect_stderr(buf):
-            result = func()
+        stderr_buf = io.StringIO()
+        stdout_buf = io.StringIO()
 
-        stderr_out = buf.getvalue()
+        # Store original streams
+        original_stderr = sys.stderr
+        original_stdout = sys.stdout
+
+        try:
+            # Redirect both stderr and stdout
+            sys.stderr = stderr_buf
+            sys.stdout = stdout_buf
+
+            # Also use contextlib for additional safety
+            with contextlib.redirect_stderr(stderr_buf):
+                result = func()
+        finally:
+            # Restore original streams
+            sys.stderr = original_stderr
+            sys.stdout = original_stdout
+
+        # Process captured stderr
+        stderr_out = stderr_buf.getvalue()
         if stderr_out:
-            # Filter out the known 'token' bug message from older kaggle client versions
+            # Filter out known benign warnings from kaggle client
             filtered = []
             for line in stderr_out.splitlines():
-                if "KaggleObject.from_dict() got an unexpected keyword argument 'token'" in line:
-                    # suppress this known benign warning
+                # Filter known token bug message from older kaggle versions and file upload errors
+                if any(
+                    pattern in line
+                    for pattern in [
+                        "KaggleObject.from_dict() got an unexpected keyword argument 'token'",
+                        "Error while trying to load upload info",
+                    ]
+                ):
                     continue
                 filtered.append(line)
 
             if filtered:
                 print("[kaggle-client-stderr]:")
                 for line in filtered:
+                    print(line)
+
+        # Process captured stdout - show normal file upload messages but filter error logs
+        stdout_out = stdout_buf.getvalue()
+        if stdout_out:
+            for line in stdout_out.splitlines():
+                # Skip error log lines that appeared during uploads
+                if any(
+                    pattern in line
+                    for pattern in [
+                        "Error while trying to load upload info",
+                        "KaggleObject.from_dict()",
+                    ]
+                ):
+                    continue
+                if line.strip():
                     print(line)
 
         return result
@@ -108,6 +149,7 @@ class KaggleUploader:
                     folder=str(tmpdir_path),
                     version_notes=f"Auto-update: {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')} UTC",
                     quiet=self.config.get("upload", {}).get("quiet", False),
+                    convert_to_csv=False,
                     delete_old_versions=True,
                 )
             )
@@ -296,22 +338,95 @@ class KaggleUploader:
         for dataset_name, config in datasets_to_upload.items():
             self._upload_single_dataset(dataset_name, config)
 
-    def _upload_to_kaggle(
-        self, tmpdir_path: Path, kaggle_slug: str, config: dict[str, Any], dataset_name: str
-    ) -> None:
-        """Handle Kaggle API upload (version creation or dataset creation)."""
+    def _try_create_dataset_as_fallback(
+        self, tmpdir_path: Path, dataset_name: str, kaggle_slug: str
+    ) -> bool:
+        """Try creating dataset as fallback. Returns True if successful."""
+        print("⚠️  Version creation failed — attempting to create dataset as fallback...")
+        is_public = self.config.get("upload", {}).get("is_public", True)
+        quiet = self.config.get("upload", {}).get("quiet", False)
         try:
             self._run_with_filtered_stderr(
-                lambda: self.api.dataset_create_version(
-                    folder=str(tmpdir_path),
-                    version_notes=f"Auto-update: {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')} UTC",
-                    quiet=self.config.get("upload", {}).get("quiet", False),
-                    delete_old_versions=True,
+                lambda is_public=is_public, quiet=quiet: self._create_new_dataset(
+                    tmpdir_path, is_public, quiet
                 )
             )
-            print(f"✓ Successfully uploaded: {dataset_name}")
-        except Exception as e:
-            self._handle_upload_error(e, tmpdir_path, kaggle_slug, config, dataset_name)
+            print(f"✓ Dataset created: {dataset_name} ({kaggle_slug})")
+            return True
+        except Exception as e2:
+            print(f"⚠️  Dataset creation also failed: {e2}. Continuing with retries...")
+            return False
+
+    def _upload_to_kaggle(self, tmpdir_path: Path, kaggle_slug: str, dataset_name: str) -> None:
+        """Handle Kaggle API upload (version creation or dataset creation) with retry logic."""
+        max_retries = 5
+        retry_delay = 10  # seconds
+        quiet = self.config.get("upload", {}).get("quiet", False)
+
+        for attempt in range(1, max_retries + 1):
+            try:
+                self._run_with_filtered_stderr(
+                    lambda quiet=quiet: self._create_dataset_version(tmpdir_path, quiet)
+                )
+                print(f"✓ Successfully uploaded: {dataset_name}")
+                return
+            except Exception as e:
+                error_msg = str(e).lower()
+
+                # If we get dataset-not-found or forbidden errors, try creating it immediately
+                if (
+                    "not found" in error_msg
+                    or "404" in error_msg
+                    or "does not exist" in error_msg
+                    or "403" in error_msg
+                    or "forbidden" in error_msg
+                ) and attempt == 1:
+                    print(
+                        "⚠️  Dataset not found or access denied — attempting to create new dataset..."
+                    )
+                    if self._try_create_dataset_as_fallback(tmpdir_path, dataset_name, kaggle_slug):
+                        return
+
+                # On 500 errors, try dataset creation as alternative after a few retries
+                if (
+                    "500" in error_msg
+                    or "502" in error_msg
+                    or "503" in error_msg
+                    or "504" in error_msg
+                    or "internal" in error_msg
+                ):
+                    if attempt < max_retries // 2:
+                        wait_time = retry_delay * attempt
+                        print(
+                            f"⚠️  Transient server error (attempt {attempt}/{max_retries}). Retrying in {wait_time}s..."
+                        )
+                        time.sleep(wait_time)
+                    elif attempt == max_retries // 2 + 1:
+                        if self._try_create_dataset_as_fallback(
+                            tmpdir_path, dataset_name, kaggle_slug
+                        ):
+                            return
+                    elif attempt < max_retries:
+                        wait_time = retry_delay * attempt
+                        print(
+                            f"⚠️  Transient server error (attempt {attempt}/{max_retries}). Retrying in {wait_time}s..."
+                        )
+                        time.sleep(wait_time)
+                    else:
+                        # Final attempt failed
+                        print(f"✗ Upload failed: {dataset_name} - {e}")
+                        return
+
+    def _create_dataset_version(self, tmpdir_path: Path, quiet: bool) -> None:
+        """Create a new dataset version on Kaggle."""
+        version_notes = f"Auto-update: {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')} UTC"
+        self.api.dataset_create_version(
+            folder=str(tmpdir_path),
+            version_notes=version_notes,
+            quiet=quiet,
+            convert_to_csv=False,
+            delete_old_versions=True,
+        )
 
     def _handle_upload_error(
         self,
@@ -319,6 +434,7 @@ class KaggleUploader:
         tmpdir_path: Path,
         kaggle_slug: str,
         config: dict[str, Any],
+        dataset_name: str,
     ) -> None:
         """Handle upload error with fallback to dataset creation if configured."""
         msg = str(error).lower()
@@ -328,27 +444,53 @@ class KaggleUploader:
 
         if create_if_missing and ("not found" in msg or "404" in msg or "forbidden" in msg):
             print("⚠️  Dataset version creation failed — attempting to create dataset...")
-            try:
-                is_public = self.config.get("upload", {}).get("is_public", True)
-                if not (self.confirm_yes or self.dry_run):
-                    print(
-                        "✗ Dataset creation required but not confirmed. Re-run with `--yes` to allow creation."
-                    )
-                    return
+            max_retries = 2
+            is_public_val: bool = self.config.get("upload", {}).get("is_public", True)
+            quiet_val: bool = self.config.get("upload", {}).get("quiet", False)
 
-                self._run_with_filtered_stderr(
-                    lambda: self.api.dataset_create_new(
-                        folder=str(tmpdir_path),
-                        public=is_public,
-                        quiet=self.config.get("upload", {}).get("quiet", False),
+            for attempt in range(1, max_retries + 1):
+                try:
+                    if not (self.confirm_yes or self.dry_run):
+                        print(
+                            "✗ Dataset creation required but not confirmed. Re-run with `--yes` to allow creation."
+                        )
+                        return
+
+                    self._run_with_filtered_stderr(
+                        lambda is_public_val=is_public_val, quiet_val=quiet_val: self._create_new_dataset(
+                            tmpdir_path, is_public_val, quiet_val
+                        )
                     )
-                )
-                print(f"✓ Dataset created: {kaggle_slug}")
-            except Exception as e2:
-                print(f"✗ Failed to create dataset: {e2}")
-                print(f"✗ Original error: {error}")
+                    print(f"✓ Dataset created: {dataset_name} ({kaggle_slug})")
+                    return
+                except Exception as e2:
+                    error_msg2 = str(e2).lower()
+                    # Retry on transient errors
+                    if (
+                        "500" in error_msg2
+                        or "502" in error_msg2
+                        or "503" in error_msg2
+                        or "504" in error_msg2
+                        or "internal" in error_msg2
+                    ) and attempt < max_retries:
+                        print(
+                            f"⚠️  Transient server error during creation (attempt {attempt}/{max_retries}). Retrying in 5s..."
+                        )
+                        time.sleep(5)
+                        continue
+                    print(f"✗ Failed to create dataset: {e2}")
+                    print(f"✗ Original error: {error}")
+                    return
         else:
-            print(f"✗ Upload failed: {error}")
+            print(f"✗ Upload failed: {dataset_name} - {error}")
+
+    def _create_new_dataset(self, tmpdir_path: Path, is_public: bool, quiet: bool) -> None:
+        """Create a new dataset on Kaggle."""
+        self.api.dataset_create_new(
+            folder=str(tmpdir_path),
+            public=is_public,
+            quiet=quiet,
+        )
 
     def _upload_single_dataset(self, dataset_name: str, config: dict[str, Any]) -> None:
         """Upload a single dataset to Kaggle."""
@@ -401,7 +543,7 @@ class KaggleUploader:
                     return
 
                 # Real upload
-                self._upload_to_kaggle(tmpdir_path, kaggle_slug, config, dataset_name)
+                self._upload_to_kaggle(tmpdir_path, kaggle_slug, dataset_name)
 
         except Exception as e:
             print(f"✗ Upload failed: {e}")
@@ -465,9 +607,8 @@ class KaggleUploader:
         return {"fields": fields}
 
     def _build_resources(self, files: list[str], dataset_name: str, config: dict[str, Any]) -> list:
-        """Build resources list with file descriptions and schema."""
+        """Build resources list with file descriptions (schema support disabled due to Kaggle API compatibility)."""
         resources = []
-        schema = self._build_resource_schema(config)
 
         for full_path in files:
             fname = Path(full_path).name
@@ -481,9 +622,6 @@ class KaggleUploader:
                 "path": fname,
                 "description": file_desc,
             }
-
-            if schema:
-                resource["schema"] = schema
 
             resources.append(resource)
 
@@ -526,11 +664,6 @@ class KaggleUploader:
 
         if resources:
             metadata["resources"] = resources
-
-        # Add update frequency if specified
-        update_freq = config.get("updateFrequency")
-        if update_freq:
-            metadata["updateFrequency"] = update_freq
 
         return metadata
 
