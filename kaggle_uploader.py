@@ -357,7 +357,9 @@ class KaggleUploader:
             print(f"⚠️  Dataset creation also failed: {e2}. Continuing with retries...")
             return False
 
-    def _upload_to_kaggle(self, tmpdir_path: Path, kaggle_slug: str, dataset_name: str) -> None:
+    def _upload_to_kaggle(
+        self, tmpdir_path: Path, kaggle_slug: str, dataset_name: str, image_path: Path | None = None
+    ) -> None:
         """Handle Kaggle API upload (version creation or dataset creation) with retry logic."""
         max_retries = 5
         retry_delay = 10  # seconds
@@ -369,6 +371,10 @@ class KaggleUploader:
                     lambda quiet=quiet: self._create_dataset_version(tmpdir_path, quiet)
                 )
                 print(f"✓ Successfully uploaded: {dataset_name}")
+
+                if image_path:
+                    self._upload_header_image(tmpdir_path, image_path)
+
                 return
             except Exception as e:
                 error_msg = str(e).lower()
@@ -387,26 +393,17 @@ class KaggleUploader:
                     if self._try_create_dataset_as_fallback(tmpdir_path, dataset_name, kaggle_slug):
                         return
 
-                # On 500 errors, try dataset creation as alternative after a few retries
-                if (
+                # On transient server errors (5xx), keep retrying version creation
+                is_transient = (
                     "500" in error_msg
                     or "502" in error_msg
                     or "503" in error_msg
                     or "504" in error_msg
                     or "internal" in error_msg
-                ):
-                    if attempt < max_retries // 2:
-                        wait_time = retry_delay * attempt
-                        print(
-                            f"⚠️  Transient server error (attempt {attempt}/{max_retries}). Retrying in {wait_time}s..."
-                        )
-                        time.sleep(wait_time)
-                    elif attempt == max_retries // 2 + 1:
-                        if self._try_create_dataset_as_fallback(
-                            tmpdir_path, dataset_name, kaggle_slug
-                        ):
-                            return
-                    elif attempt < max_retries:
+                )
+
+                if is_transient:
+                    if attempt < max_retries:
                         wait_time = retry_delay * attempt
                         print(
                             f"⚠️  Transient server error (attempt {attempt}/{max_retries}). Retrying in {wait_time}s..."
@@ -416,6 +413,10 @@ class KaggleUploader:
                         # Final attempt failed
                         print(f"✗ Upload failed: {dataset_name} - {e}")
                         return
+                else:
+                    # Non-transient error, don't retry
+                    print(f"✗ Upload failed: {dataset_name} - {e}")
+                    return
 
     def _create_dataset_version(self, tmpdir_path: Path, quiet: bool) -> None:
         """Create a new dataset version on Kaggle."""
@@ -427,6 +428,25 @@ class KaggleUploader:
             convert_to_csv=False,
             delete_old_versions=True,
         )
+
+    def _upload_header_image(self, tmpdir_path: Path, image_path: Path) -> None:
+        """Upload header/thumbnail image to Kaggle dataset."""
+        try:
+            metadata_file = tmpdir_path / "dataset-metadata.json"
+            if not metadata_file.exists():
+                print("⚠️  Metadata file not found, skipping header image upload")
+                return
+
+            relative_image_path = image_path.name
+            full_image_path = tmpdir_path / relative_image_path
+            if not full_image_path.exists():
+                print(f"⚠️  Image file not found in temp folder: {relative_image_path}")
+                return
+
+            self.api._upload_dataset_image_file(str(tmpdir_path), relative_image_path)
+            print(f"✓ Header image uploaded: {relative_image_path}")
+        except Exception as e:
+            print(f"⚠️  Failed to upload header image: {e}")
 
     def _handle_upload_error(
         self,
@@ -457,8 +477,8 @@ class KaggleUploader:
                         return
 
                     self._run_with_filtered_stderr(
-                        lambda is_public_val=is_public_val, quiet_val=quiet_val: self._create_new_dataset(
-                            tmpdir_path, is_public_val, quiet_val
+                        lambda is_public_val=is_public_val, quiet_val=quiet_val: (
+                            self._create_new_dataset(tmpdir_path, is_public_val, quiet_val)
                         )
                     )
                     print(f"✓ Dataset created: {dataset_name} ({kaggle_slug})")
@@ -543,7 +563,7 @@ class KaggleUploader:
                     return
 
                 # Real upload
-                self._upload_to_kaggle(tmpdir_path, kaggle_slug, dataset_name)
+                self._upload_to_kaggle(tmpdir_path, kaggle_slug, dataset_name, image_path)
 
         except Exception as e:
             print(f"✗ Upload failed: {e}")
