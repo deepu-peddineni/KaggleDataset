@@ -36,7 +36,7 @@ datasets:
     keywords: ["crude-oil", "brent", "energy", "commodity", "fred", "time-series"]
     category: "Energy"
     license: "CC0-1.0"
-    image: "CrudeOil/assets/crude_oil_thumbnail.png"
+    image: "CrudeOil/assets/crude_brent.jpg"
     file_info:
       "CrudeOil/csv/crude_oil_brent.csv":
         description: "CSV export of Brent daily prices (Date, Price, Year, Month, Day)"
@@ -55,8 +55,8 @@ datasets:
     pre_upload:
       script: "HenryHub/henry_hub_downloader.py"
       allow_fail: false
-    kaggle_dataset: "lakshmi2305/henry-hub-gas-spot-prices"
-    kaggle_slug: "henry-hub-gas-spot-prices"
+    kaggle_dataset: "lakshmi2305/henry-hub-version-test"
+    kaggle_slug: "henry-hub-version-test"
     title: "Henry Hub Natural Gas Spot Prices"
     subtitle: "Daily natural gas spot prices from Henry Hub"
     description: |
@@ -87,6 +87,7 @@ datasets:
     keywords: ["natural-gas", "energy", "henry-hub", "commodity", "eia", "time-series"]
     category: "Energy"
     license: "CC0-1.0"
+    image: "HenryHub/assets/henry_hub.jpg"
     file_info:
       "HenryHub/csv/henry_hub_natural_gas.csv":
         description: "CSV export of Henry Hub daily spot prices (Date, Price, Year, Month, Day)"
