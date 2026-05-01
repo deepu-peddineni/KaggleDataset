@@ -100,6 +100,79 @@ datasets:
       - "HenryHub/json/henry_hub_natural_gas.json"
       - "HenryHub/parquet/henry_hub_natural_gas.parquet"
 
+  wti_crude_oil:
+    enabled: true
+    source_dir: "Gasoline"
+    pre_upload:
+      script: "Gasoline/eia_downloader.py"
+      allow_fail: false
+    kaggle_dataset: "lakshmi2305/wti-crude-oil-prices"
+    kaggle_slug: "wti-crude-oil-prices"
+    title: "EIA Energy Prices - All Commodities"
+    subtitle: "Comprehensive daily energy commodity spot prices from EIA"
+    description: |
+      Comprehensive daily energy commodity spot prices from the U.S. Energy Information Administration (EIA) Open Data API v2.
+
+      **Data Source:** EIA Open Data API v2 - Petroleum Prices (Spot Prices)
+      - API Endpoint: `/v2/petroleum/pri/spt`
+      - API Documentation: https://www.eia.gov/opendata/documentation.php
+      - Registration: https://www.eia.gov/opendata/register.php
+
+      **Time Range:** 2006-05-23 to Present
+      **Update Frequency:** Daily (automated upload weekly on Mondays)
+      **Data Format:** Daily spot prices by product
+
+      **Products Included:**
+      - WTI Crude Oil (EPCWTI) - USD per barrel
+      - UK Brent Crude Oil (EPCBRENT) - USD per barrel
+      - Reformulated Regular Gasoline (EPMRR) - USD per gallon
+      - Conventional Regular Gasoline (EPMRU) - USD per gallon
+      - No 2 Diesel Low Sulfur (EPD2DXL0) - USD per gallon
+      - Carb Diesel (EPD2DC) - USD per gallon
+      - No 2 Fuel Oil / Heating Oil (EPD2F) - USD per gallon
+      - Kerosene-Type Jet Fuel (EPJK) - USD per gallon
+      - Propane - Consumer Grade (EPLLPA) - USD per gallon
+
+      **Files Included:**
+      - CSV: Universal format for easy access
+      - JSON: Preserves date types
+      - Parquet: Compressed columnar format for analytics
+
+      **Columns:**
+      - Date: Trading date (YYYY-MM-DD)
+      - Product: Energy commodity name
+      - ProductID: EIA product identifier code
+      - Price: Daily spot price (varies by unit)
+      - Year: Year extracted from date
+      - Month: Month (1-12)
+      - Day: Day (1-31)
+
+      **Key Statistics:**
+      - Total Records: 50,000+ rows and growing
+      - Multiple Energy Commodities: Crude oil, refined products, natural gas alternatives
+      - Historical Coverage: 20+ years of data
+      - Real-time Updates: Daily updates via EIA API
+
+      **About EIA:**
+      The U.S. Energy Information Administration (EIA) is an independent agency under the Department of Energy dedicated to providing official energy statistics and analyses.
+
+      Last Updated: Auto-updated weekly on Mondays
+    keywords: ["eia", "energy-prices", "crude-oil", "gasoline", "diesel", "heating-oil", "jet-fuel", "propane", "commodity", "spot-prices", "time-series", "energy"]
+    category: "Energy"
+    license: "CC0-1.0"
+    image: "Gasoline/assets/energy_prices.jpg"
+    file_info:
+      "Gasoline/csv/eia_energy_prices.csv":
+        description: "CSV export of all EIA energy spot prices (Date, Product, ProductID, Price, Year, Month, Day)"
+      "Gasoline/json/eia_energy_prices.json":
+        description: "JSON export containing date, product, and price records"
+      "Gasoline/parquet/eia_energy_prices.parquet":
+        description: "Parquet export for efficient analytics"
+    files:
+      - "Gasoline/csv/eia_energy_prices.csv"
+      - "Gasoline/json/eia_energy_prices.json"
+      - "Gasoline/parquet/eia_energy_prices.parquet"
+
 # Upload Settings
 upload:
   # Create dataset if it doesn't exist (first time only)

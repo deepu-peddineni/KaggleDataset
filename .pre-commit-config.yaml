@@ -64,7 +64,7 @@ repos:
   # Bandit - Security issue detector
   # ============================================================================
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.9.2
+    rev: 1.9.4
     hooks:
       - id: bandit
         args: ['-ll']
@@ -75,9 +75,9 @@ repos:
   # Ruff - Fast Python linter
   # ============================================================================
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.6
+    rev: v0.15.12
     hooks:
-      - id: ruff
+      - id: ruff-check
         description: Fast Python linter
         args: [--fix]
 
@@ -88,7 +88,7 @@ repos:
   # Python code quality & style
   # ============================================================================
   - repo: https://github.com/psf/black
-    rev: 25.11.0
+    rev: 26.3.1
     hooks:
       - id: black
         description: Format Python code
