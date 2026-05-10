@@ -1,4 +1,8 @@
 Date,Product,ProductID,Series,SeriesID,Price,Year,Month,Day
+2026-05-01,UK Brent Crude Oil,EPCBRENT,Brent Crude Oil,RBRTE,118.26,2026,5,1
+2026-04-30,UK Brent Crude Oil,EPCBRENT,Brent Crude Oil,RBRTE,124.24,2026,4,30
+2026-04-29,UK Brent Crude Oil,EPCBRENT,Brent Crude Oil,RBRTE,124.16,2026,4,29
+2026-04-28,UK Brent Crude Oil,EPCBRENT,Brent Crude Oil,RBRTE,117.62,2026,4,28
 2026-04-27,UK Brent Crude Oil,EPCBRENT,Brent Crude Oil,RBRTE,113.89,2026,4,27
 2026-04-24,UK Brent Crude Oil,EPCBRENT,Brent Crude Oil,RBRTE,111.86,2026,4,24
 2026-04-23,UK Brent Crude Oil,EPCBRENT,Brent Crude Oil,RBRTE,113.25,2026,4,23
@@ -456,11 +460,11 @@ Date,Product,ProductID,Series,SeriesID,Price,Year,Month,Day
 2024-07-11,UK Brent Crude Oil,EPCBRENT,Brent Crude Oil,RBRTE,86.49,2024,7,11
 2024-07-10,UK Brent Crude Oil,EPCBRENT,Brent Crude Oil,RBRTE,86.55,2024,7,10
 2024-07-09,UK Brent Crude Oil,EPCBRENT,Brent Crude Oil,RBRTE,86.48,2024,7,9
-2024-07-08,UK Brent Crude Oil,EPCBRENT,Brent Crude Oil,RBRTE,87.15,2024,7,8
-2024-07-05,UK Brent Crude Oil,EPCBRENT,Brent Crude Oil,RBRTE,88.66,2024,7,5
-2024-07-04,UK Brent Crude Oil,EPCBRENT,Brent Crude Oil,RBRTE,88.34,2024,7,4
-2024-07-03,UK Brent Crude Oil,EPCBRENT,Brent Crude Oil,RBRTE,88.25,2024,7,3
-2024-07-02,UK Brent Crude Oil,EPCBRENT,Brent Crude Oil,RBRTE,88.28,2024,7,2
+2026-05-04,Carb Diesel,EPD2DC,Carb Diesel (LA/Gulf Coast),EER_EPD2DC_PF4_Y05LA_DPG,4.181,2026,5,4
+2026-05-01,Carb Diesel,EPD2DC,Carb Diesel (LA/Gulf Coast),EER_EPD2DC_PF4_Y05LA_DPG,4.109,2026,5,1
+2026-04-30,Carb Diesel,EPD2DC,Carb Diesel (LA/Gulf Coast),EER_EPD2DC_PF4_Y05LA_DPG,4.339,2026,4,30
+2026-04-29,Carb Diesel,EPD2DC,Carb Diesel (LA/Gulf Coast),EER_EPD2DC_PF4_Y05LA_DPG,4.456,2026,4,29
+2026-04-28,Carb Diesel,EPD2DC,Carb Diesel (LA/Gulf Coast),EER_EPD2DC_PF4_Y05LA_DPG,4.265,2026,4,28
 2026-04-27,Carb Diesel,EPD2DC,Carb Diesel (LA/Gulf Coast),EER_EPD2DC_PF4_Y05LA_DPG,4.344,2026,4,27
 2026-04-24,Carb Diesel,EPD2DC,Carb Diesel (LA/Gulf Coast),EER_EPD2DC_PF4_Y05LA_DPG,4.269,2026,4,24
 2026-04-23,Carb Diesel,EPD2DC,Carb Diesel (LA/Gulf Coast),EER_EPD2DC_PF4_Y05LA_DPG,4.32,2026,4,23
@@ -907,10 +911,11 @@ Date,Product,ProductID,Series,SeriesID,Price,Year,Month,Day
 2024-07-11,Carb Diesel,EPD2DC,Carb Diesel (LA/Gulf Coast),EER_EPD2DC_PF4_Y05LA_DPG,2.44,2024,7,11
 2024-07-10,Carb Diesel,EPD2DC,Carb Diesel (LA/Gulf Coast),EER_EPD2DC_PF4_Y05LA_DPG,2.549,2024,7,10
 2024-07-09,Carb Diesel,EPD2DC,Carb Diesel (LA/Gulf Coast),EER_EPD2DC_PF4_Y05LA_DPG,2.554,2024,7,9
-2024-07-08,Carb Diesel,EPD2DC,Carb Diesel (LA/Gulf Coast),EER_EPD2DC_PF4_Y05LA_DPG,2.603,2024,7,8
-2024-07-05,Carb Diesel,EPD2DC,Carb Diesel (LA/Gulf Coast),EER_EPD2DC_PF4_Y05LA_DPG,2.645,2024,7,5
-2024-07-03,Carb Diesel,EPD2DC,Carb Diesel (LA/Gulf Coast),EER_EPD2DC_PF4_Y05LA_DPG,2.658,2024,7,3
-2024-07-02,Carb Diesel,EPD2DC,Carb Diesel (LA/Gulf Coast),EER_EPD2DC_PF4_Y05LA_DPG,2.661,2024,7,2
+2026-05-04,Conventional Regular Gasoline,EPMRU,Conventional Regular Gasoline (Gulf Coast),EER_EPMRU_PF4_RGC_DPG,3.703,2026,5,4
+2026-05-01,Conventional Regular Gasoline,EPMRU,Conventional Regular Gasoline (Gulf Coast),EER_EPMRU_PF4_RGC_DPG,3.598,2026,5,1
+2026-04-30,Conventional Regular Gasoline,EPMRU,Conventional Regular Gasoline (Gulf Coast),EER_EPMRU_PF4_RGC_DPG,3.823,2026,4,30
+2026-04-29,Conventional Regular Gasoline,EPMRU,Conventional Regular Gasoline (Gulf Coast),EER_EPMRU_PF4_RGC_DPG,3.77,2026,4,29
+2026-04-28,Conventional Regular Gasoline,EPMRU,Conventional Regular Gasoline (Gulf Coast),EER_EPMRU_PF4_RGC_DPG,3.561,2026,4,28
 2026-04-27,Conventional Regular Gasoline,EPMRU,Conventional Regular Gasoline (Gulf Coast),EER_EPMRU_PF4_RGC_DPG,3.496,2026,4,27
 2026-04-24,Conventional Regular Gasoline,EPMRU,Conventional Regular Gasoline (Gulf Coast),EER_EPMRU_PF4_RGC_DPG,3.467,2026,4,24
 2026-04-23,Conventional Regular Gasoline,EPMRU,Conventional Regular Gasoline (Gulf Coast),EER_EPMRU_PF4_RGC_DPG,3.456,2026,4,23
@@ -1360,11 +1365,11 @@ Date,Product,ProductID,Series,SeriesID,Price,Year,Month,Day
 2024-07-12,Conventional Regular Gasoline,EPMRU,Conventional Regular Gasoline (Gulf Coast),EER_EPMRU_PF4_RGC_DPG,2.356,2024,7,12
 2024-07-11,Conventional Regular Gasoline,EPMRU,Conventional Regular Gasoline (Gulf Coast),EER_EPMRU_PF4_RGC_DPG,2.37,2024,7,11
 2024-07-10,Conventional Regular Gasoline,EPMRU,Conventional Regular Gasoline (Gulf Coast),EER_EPMRU_PF4_RGC_DPG,2.355,2024,7,10
-2024-07-09,Conventional Regular Gasoline,EPMRU,Conventional Regular Gasoline (Gulf Coast),EER_EPMRU_PF4_RGC_DPG,2.407,2024,7,9
-2024-07-08,Conventional Regular Gasoline,EPMRU,Conventional Regular Gasoline (Gulf Coast),EER_EPMRU_PF4_RGC_DPG,2.404,2024,7,8
-2024-07-05,Conventional Regular Gasoline,EPMRU,Conventional Regular Gasoline (Gulf Coast),EER_EPMRU_PF4_RGC_DPG,2.451,2024,7,5
-2024-07-03,Conventional Regular Gasoline,EPMRU,Conventional Regular Gasoline (Gulf Coast),EER_EPMRU_PF4_RGC_DPG,2.457,2024,7,3
-2024-07-02,Conventional Regular Gasoline,EPMRU,Conventional Regular Gasoline (Gulf Coast),EER_EPMRU_PF4_RGC_DPG,2.439,2024,7,2
+2026-05-04,Conventional Regular Gasoline,EPMRU,Conventional Regular Gasoline (NY),EER_EPMRU_PF4_Y35NY_DPG,3.748,2026,5,4
+2026-05-01,Conventional Regular Gasoline,EPMRU,Conventional Regular Gasoline (NY),EER_EPMRU_PF4_Y35NY_DPG,3.63,2026,5,1
+2026-04-30,Conventional Regular Gasoline,EPMRU,Conventional Regular Gasoline (NY),EER_EPMRU_PF4_Y35NY_DPG,3.843,2026,4,30
+2026-04-29,Conventional Regular Gasoline,EPMRU,Conventional Regular Gasoline (NY),EER_EPMRU_PF4_Y35NY_DPG,3.788,2026,4,29
+2026-04-28,Conventional Regular Gasoline,EPMRU,Conventional Regular Gasoline (NY),EER_EPMRU_PF4_Y35NY_DPG,3.586,2026,4,28
 2026-04-27,Conventional Regular Gasoline,EPMRU,Conventional Regular Gasoline (NY),EER_EPMRU_PF4_Y35NY_DPG,3.521,2026,4,27
 2026-04-24,Conventional Regular Gasoline,EPMRU,Conventional Regular Gasoline (NY),EER_EPMRU_PF4_Y35NY_DPG,3.534,2026,4,24
 2026-04-23,Conventional Regular Gasoline,EPMRU,Conventional Regular Gasoline (NY),EER_EPMRU_PF4_Y35NY_DPG,3.523,2026,4,23
@@ -1814,11 +1819,11 @@ Date,Product,ProductID,Series,SeriesID,Price,Year,Month,Day
 2024-07-12,Conventional Regular Gasoline,EPMRU,Conventional Regular Gasoline (NY),EER_EPMRU_PF4_Y35NY_DPG,2.503,2024,7,12
 2024-07-11,Conventional Regular Gasoline,EPMRU,Conventional Regular Gasoline (NY),EER_EPMRU_PF4_Y35NY_DPG,2.525,2024,7,11
 2024-07-10,Conventional Regular Gasoline,EPMRU,Conventional Regular Gasoline (NY),EER_EPMRU_PF4_Y35NY_DPG,2.51,2024,7,10
-2024-07-09,Conventional Regular Gasoline,EPMRU,Conventional Regular Gasoline (NY),EER_EPMRU_PF4_Y35NY_DPG,2.527,2024,7,9
-2024-07-08,Conventional Regular Gasoline,EPMRU,Conventional Regular Gasoline (NY),EER_EPMRU_PF4_Y35NY_DPG,2.542,2024,7,8
-2024-07-05,Conventional Regular Gasoline,EPMRU,Conventional Regular Gasoline (NY),EER_EPMRU_PF4_Y35NY_DPG,2.579,2024,7,5
-2024-07-03,Conventional Regular Gasoline,EPMRU,Conventional Regular Gasoline (NY),EER_EPMRU_PF4_Y35NY_DPG,2.592,2024,7,3
-2024-07-02,Conventional Regular Gasoline,EPMRU,Conventional Regular Gasoline (NY),EER_EPMRU_PF4_Y35NY_DPG,2.577,2024,7,2
+2026-05-04,Kerosene-Type Jet Fuel,EPJK,Kerosene-Type Jet Fuel (Gulf Coast),EER_EPJK_PF4_RGC_DPG,4.163,2026,5,4
+2026-05-01,Kerosene-Type Jet Fuel,EPJK,Kerosene-Type Jet Fuel (Gulf Coast),EER_EPJK_PF4_RGC_DPG,4.094,2026,5,1
+2026-04-30,Kerosene-Type Jet Fuel,EPJK,Kerosene-Type Jet Fuel (Gulf Coast),EER_EPJK_PF4_RGC_DPG,4.287,2026,4,30
+2026-04-29,Kerosene-Type Jet Fuel,EPJK,Kerosene-Type Jet Fuel (Gulf Coast),EER_EPJK_PF4_RGC_DPG,4.344,2026,4,29
+2026-04-28,Kerosene-Type Jet Fuel,EPJK,Kerosene-Type Jet Fuel (Gulf Coast),EER_EPJK_PF4_RGC_DPG,4.047,2026,4,28
 2026-04-27,Kerosene-Type Jet Fuel,EPJK,Kerosene-Type Jet Fuel (Gulf Coast),EER_EPJK_PF4_RGC_DPG,4.027,2026,4,27
 2026-04-24,Kerosene-Type Jet Fuel,EPJK,Kerosene-Type Jet Fuel (Gulf Coast),EER_EPJK_PF4_RGC_DPG,4.024,2026,4,24
 2026-04-23,Kerosene-Type Jet Fuel,EPJK,Kerosene-Type Jet Fuel (Gulf Coast),EER_EPJK_PF4_RGC_DPG,4.075,2026,4,23
@@ -2268,12 +2273,11 @@ Date,Product,ProductID,Series,SeriesID,Price,Year,Month,Day
 2024-07-12,Kerosene-Type Jet Fuel,EPJK,Kerosene-Type Jet Fuel (Gulf Coast),EER_EPJK_PF4_RGC_DPG,2.442,2024,7,12
 2024-07-11,Kerosene-Type Jet Fuel,EPJK,Kerosene-Type Jet Fuel (Gulf Coast),EER_EPJK_PF4_RGC_DPG,2.47,2024,7,11
 2024-07-10,Kerosene-Type Jet Fuel,EPJK,Kerosene-Type Jet Fuel (Gulf Coast),EER_EPJK_PF4_RGC_DPG,2.469,2024,7,10
-2024-07-09,Kerosene-Type Jet Fuel,EPJK,Kerosene-Type Jet Fuel (Gulf Coast),EER_EPJK_PF4_RGC_DPG,2.467,2024,7,9
-2024-07-08,Kerosene-Type Jet Fuel,EPJK,Kerosene-Type Jet Fuel (Gulf Coast),EER_EPJK_PF4_RGC_DPG,2.508,2024,7,8
-2024-07-05,Kerosene-Type Jet Fuel,EPJK,Kerosene-Type Jet Fuel (Gulf Coast),EER_EPJK_PF4_RGC_DPG,2.55,2024,7,5
-2024-07-03,Kerosene-Type Jet Fuel,EPJK,Kerosene-Type Jet Fuel (Gulf Coast),EER_EPJK_PF4_RGC_DPG,2.625,2024,7,3
-2024-07-02,Kerosene-Type Jet Fuel,EPJK,Kerosene-Type Jet Fuel (Gulf Coast),EER_EPJK_PF4_RGC_DPG,2.561,2024,7,2
-2024-07-01,Kerosene-Type Jet Fuel,EPJK,Kerosene-Type Jet Fuel (Gulf Coast),EER_EPJK_PF4_RGC_DPG,2.542,2024,7,1
+2026-05-04,No 2 Diesel Low Sulfur (0-15 ppm),EPD2DXL0,No 2 Diesel Low Sulfur (Gulf Coast),EER_EPD2DXL0_PF4_RGC_DPG,4.021,2026,5,4
+2026-05-01,No 2 Diesel Low Sulfur (0-15 ppm),EPD2DXL0,No 2 Diesel Low Sulfur (Gulf Coast),EER_EPD2DXL0_PF4_RGC_DPG,3.944,2026,5,1
+2026-04-30,No 2 Diesel Low Sulfur (0-15 ppm),EPD2DXL0,No 2 Diesel Low Sulfur (Gulf Coast),EER_EPD2DXL0_PF4_RGC_DPG,4.134,2026,4,30
+2026-04-29,No 2 Diesel Low Sulfur (0-15 ppm),EPD2DXL0,No 2 Diesel Low Sulfur (Gulf Coast),EER_EPD2DXL0_PF4_RGC_DPG,4.206,2026,4,29
+2026-04-28,No 2 Diesel Low Sulfur (0-15 ppm),EPD2DXL0,No 2 Diesel Low Sulfur (Gulf Coast),EER_EPD2DXL0_PF4_RGC_DPG,3.965,2026,4,28
 2026-04-27,No 2 Diesel Low Sulfur (0-15 ppm),EPD2DXL0,No 2 Diesel Low Sulfur (Gulf Coast),EER_EPD2DXL0_PF4_RGC_DPG,3.944,2026,4,27
 2026-04-24,No 2 Diesel Low Sulfur (0-15 ppm),EPD2DXL0,No 2 Diesel Low Sulfur (Gulf Coast),EER_EPD2DXL0_PF4_RGC_DPG,3.979,2026,4,24
 2026-04-23,No 2 Diesel Low Sulfur (0-15 ppm),EPD2DXL0,No 2 Diesel Low Sulfur (Gulf Coast),EER_EPD2DXL0_PF4_RGC_DPG,4.03,2026,4,23
@@ -2724,10 +2728,11 @@ Date,Product,ProductID,Series,SeriesID,Price,Year,Month,Day
 2024-07-11,No 2 Diesel Low Sulfur (0-15 ppm),EPD2DXL0,No 2 Diesel Low Sulfur (Gulf Coast),EER_EPD2DXL0_PF4_RGC_DPG,2.454,2024,7,11
 2024-07-10,No 2 Diesel Low Sulfur (0-15 ppm),EPD2DXL0,No 2 Diesel Low Sulfur (Gulf Coast),EER_EPD2DXL0_PF4_RGC_DPG,2.453,2024,7,10
 2024-07-09,No 2 Diesel Low Sulfur (0-15 ppm),EPD2DXL0,No 2 Diesel Low Sulfur (Gulf Coast),EER_EPD2DXL0_PF4_RGC_DPG,2.452,2024,7,9
-2024-07-08,No 2 Diesel Low Sulfur (0-15 ppm),EPD2DXL0,No 2 Diesel Low Sulfur (Gulf Coast),EER_EPD2DXL0_PF4_RGC_DPG,2.506,2024,7,8
-2024-07-05,No 2 Diesel Low Sulfur (0-15 ppm),EPD2DXL0,No 2 Diesel Low Sulfur (Gulf Coast),EER_EPD2DXL0_PF4_RGC_DPG,2.545,2024,7,5
-2024-07-03,No 2 Diesel Low Sulfur (0-15 ppm),EPD2DXL0,No 2 Diesel Low Sulfur (Gulf Coast),EER_EPD2DXL0_PF4_RGC_DPG,2.555,2024,7,3
-2024-07-02,No 2 Diesel Low Sulfur (0-15 ppm),EPD2DXL0,No 2 Diesel Low Sulfur (Gulf Coast),EER_EPD2DXL0_PF4_RGC_DPG,2.559,2024,7,2
+2026-05-04,No 2 Diesel Low Sulfur (0-15 ppm),EPD2DXL0,No 2 Diesel Low Sulfur (NY),EER_EPD2DXL0_PF4_Y35NY_DPG,4.091,2026,5,4
+2026-05-01,No 2 Diesel Low Sulfur (0-15 ppm),EPD2DXL0,No 2 Diesel Low Sulfur (NY),EER_EPD2DXL0_PF4_Y35NY_DPG,4.016,2026,5,1
+2026-04-30,No 2 Diesel Low Sulfur (0-15 ppm),EPD2DXL0,No 2 Diesel Low Sulfur (NY),EER_EPD2DXL0_PF4_Y35NY_DPG,4.217,2026,4,30
+2026-04-29,No 2 Diesel Low Sulfur (0-15 ppm),EPD2DXL0,No 2 Diesel Low Sulfur (NY),EER_EPD2DXL0_PF4_Y35NY_DPG,4.264,2026,4,29
+2026-04-28,No 2 Diesel Low Sulfur (0-15 ppm),EPD2DXL0,No 2 Diesel Low Sulfur (NY),EER_EPD2DXL0_PF4_Y35NY_DPG,4.035,2026,4,28
 2026-04-27,No 2 Diesel Low Sulfur (0-15 ppm),EPD2DXL0,No 2 Diesel Low Sulfur (NY),EER_EPD2DXL0_PF4_Y35NY_DPG,4.014,2026,4,27
 2026-04-24,No 2 Diesel Low Sulfur (0-15 ppm),EPD2DXL0,No 2 Diesel Low Sulfur (NY),EER_EPD2DXL0_PF4_Y35NY_DPG,4.029,2026,4,24
 2026-04-23,No 2 Diesel Low Sulfur (0-15 ppm),EPD2DXL0,No 2 Diesel Low Sulfur (NY),EER_EPD2DXL0_PF4_Y35NY_DPG,4.08,2026,4,23
@@ -3178,10 +3183,11 @@ Date,Product,ProductID,Series,SeriesID,Price,Year,Month,Day
 2024-07-11,No 2 Diesel Low Sulfur (0-15 ppm),EPD2DXL0,No 2 Diesel Low Sulfur (NY),EER_EPD2DXL0_PF4_Y35NY_DPG,2.507,2024,7,11
 2024-07-10,No 2 Diesel Low Sulfur (0-15 ppm),EPD2DXL0,No 2 Diesel Low Sulfur (NY),EER_EPD2DXL0_PF4_Y35NY_DPG,2.506,2024,7,10
 2024-07-09,No 2 Diesel Low Sulfur (0-15 ppm),EPD2DXL0,No 2 Diesel Low Sulfur (NY),EER_EPD2DXL0_PF4_Y35NY_DPG,2.507,2024,7,9
-2024-07-08,No 2 Diesel Low Sulfur (0-15 ppm),EPD2DXL0,No 2 Diesel Low Sulfur (NY),EER_EPD2DXL0_PF4_Y35NY_DPG,2.558,2024,7,8
-2024-07-05,No 2 Diesel Low Sulfur (0-15 ppm),EPD2DXL0,No 2 Diesel Low Sulfur (NY),EER_EPD2DXL0_PF4_Y35NY_DPG,2.6,2024,7,5
-2024-07-03,No 2 Diesel Low Sulfur (0-15 ppm),EPD2DXL0,No 2 Diesel Low Sulfur (NY),EER_EPD2DXL0_PF4_Y35NY_DPG,2.605,2024,7,3
-2024-07-02,No 2 Diesel Low Sulfur (0-15 ppm),EPD2DXL0,No 2 Diesel Low Sulfur (NY),EER_EPD2DXL0_PF4_Y35NY_DPG,2.613,2024,7,2
+2026-05-04,No 2 Fuel Oil / Heating Oil,EPD2F,No 2 Fuel Oil (NY),EER_EPD2F_PF4_Y35NY_DPG,3.943,2026,5,4
+2026-05-01,No 2 Fuel Oil / Heating Oil,EPD2F,No 2 Fuel Oil (NY),EER_EPD2F_PF4_Y35NY_DPG,3.871,2026,5,1
+2026-04-30,No 2 Fuel Oil / Heating Oil,EPD2F,No 2 Fuel Oil (NY),EER_EPD2F_PF4_Y35NY_DPG,4.057,2026,4,30
+2026-04-29,No 2 Fuel Oil / Heating Oil,EPD2F,No 2 Fuel Oil (NY),EER_EPD2F_PF4_Y35NY_DPG,4.114,2026,4,29
+2026-04-28,No 2 Fuel Oil / Heating Oil,EPD2F,No 2 Fuel Oil (NY),EER_EPD2F_PF4_Y35NY_DPG,3.867,2026,4,28
 2026-04-27,No 2 Fuel Oil / Heating Oil,EPD2F,No 2 Fuel Oil (NY),EER_EPD2F_PF4_Y35NY_DPG,3.847,2026,4,27
 2026-04-24,No 2 Fuel Oil / Heating Oil,EPD2F,No 2 Fuel Oil (NY),EER_EPD2F_PF4_Y35NY_DPG,3.871,2026,4,24
 2026-04-23,No 2 Fuel Oil / Heating Oil,EPD2F,No 2 Fuel Oil (NY),EER_EPD2F_PF4_Y35NY_DPG,3.922,2026,4,23
@@ -3632,11 +3638,11 @@ Date,Product,ProductID,Series,SeriesID,Price,Year,Month,Day
 2024-07-11,No 2 Fuel Oil / Heating Oil,EPD2F,No 2 Fuel Oil (NY),EER_EPD2F_PF4_Y35NY_DPG,2.39,2024,7,11
 2024-07-10,No 2 Fuel Oil / Heating Oil,EPD2F,No 2 Fuel Oil (NY),EER_EPD2F_PF4_Y35NY_DPG,2.389,2024,7,10
 2024-07-09,No 2 Fuel Oil / Heating Oil,EPD2F,No 2 Fuel Oil (NY),EER_EPD2F_PF4_Y35NY_DPG,2.389,2024,7,9
-2024-07-08,No 2 Fuel Oil / Heating Oil,EPD2F,No 2 Fuel Oil (NY),EER_EPD2F_PF4_Y35NY_DPG,2.438,2024,7,8
-2024-07-05,No 2 Fuel Oil / Heating Oil,EPD2F,No 2 Fuel Oil (NY),EER_EPD2F_PF4_Y35NY_DPG,2.48,2024,7,5
-2024-07-03,No 2 Fuel Oil / Heating Oil,EPD2F,No 2 Fuel Oil (NY),EER_EPD2F_PF4_Y35NY_DPG,2.493,2024,7,3
-2024-07-02,No 2 Fuel Oil / Heating Oil,EPD2F,No 2 Fuel Oil (NY),EER_EPD2F_PF4_Y35NY_DPG,2.496,2024,7,2
-2024-07-01,No 2 Fuel Oil / Heating Oil,EPD2F,No 2 Fuel Oil (NY),EER_EPD2F_PF4_Y35NY_DPG,2.477,2024,7,1
+2026-05-04,Propane,EPLLPA,Propane (Midwest),EER_EPLLPA_PF4_Y44MB_DPG,0.915,2026,5,4
+2026-05-01,Propane,EPLLPA,Propane (Midwest),EER_EPLLPA_PF4_Y44MB_DPG,0.884,2026,5,1
+2026-04-30,Propane,EPLLPA,Propane (Midwest),EER_EPLLPA_PF4_Y44MB_DPG,0.831,2026,4,30
+2026-04-29,Propane,EPLLPA,Propane (Midwest),EER_EPLLPA_PF4_Y44MB_DPG,0.845,2026,4,29
+2026-04-28,Propane,EPLLPA,Propane (Midwest),EER_EPLLPA_PF4_Y44MB_DPG,0.818,2026,4,28
 2026-04-27,Propane,EPLLPA,Propane (Midwest),EER_EPLLPA_PF4_Y44MB_DPG,0.819,2026,4,27
 2026-04-24,Propane,EPLLPA,Propane (Midwest),EER_EPLLPA_PF4_Y44MB_DPG,0.82,2026,4,24
 2026-04-23,Propane,EPLLPA,Propane (Midwest),EER_EPLLPA_PF4_Y44MB_DPG,0.83,2026,4,23
@@ -4085,11 +4091,11 @@ Date,Product,ProductID,Series,SeriesID,Price,Year,Month,Day
 2024-07-12,Propane,EPLLPA,Propane (Midwest),EER_EPLLPA_PF4_Y44MB_DPG,0.81,2024,7,12
 2024-07-11,Propane,EPLLPA,Propane (Midwest),EER_EPLLPA_PF4_Y44MB_DPG,0.81,2024,7,11
 2024-07-10,Propane,EPLLPA,Propane (Midwest),EER_EPLLPA_PF4_Y44MB_DPG,0.814,2024,7,10
-2024-07-09,Propane,EPLLPA,Propane (Midwest),EER_EPLLPA_PF4_Y44MB_DPG,0.826,2024,7,9
-2024-07-08,Propane,EPLLPA,Propane (Midwest),EER_EPLLPA_PF4_Y44MB_DPG,0.835,2024,7,8
-2024-07-03,Propane,EPLLPA,Propane (Midwest),EER_EPLLPA_PF4_Y44MB_DPG,0.843,2024,7,3
-2024-07-02,Propane,EPLLPA,Propane (Midwest),EER_EPLLPA_PF4_Y44MB_DPG,0.845,2024,7,2
-2024-07-01,Propane,EPLLPA,Propane (Midwest),EER_EPLLPA_PF4_Y44MB_DPG,0.845,2024,7,1
+2026-05-04,Reformulated Regular Gasoline,EPMRR,Reformulated Regular Gasoline (LA),EER_EPMRR_PF4_Y05LA_DPG,4.271,2026,5,4
+2026-05-01,Reformulated Regular Gasoline,EPMRR,Reformulated Regular Gasoline (LA),EER_EPMRR_PF4_Y05LA_DPG,4.158,2026,5,1
+2026-04-30,Reformulated Regular Gasoline,EPMRR,Reformulated Regular Gasoline (LA),EER_EPMRR_PF4_Y05LA_DPG,4.378,2026,4,30
+2026-04-29,Reformulated Regular Gasoline,EPMRR,Reformulated Regular Gasoline (LA),EER_EPMRR_PF4_Y05LA_DPG,4.355,2026,4,29
+2026-04-28,Reformulated Regular Gasoline,EPMRR,Reformulated Regular Gasoline (LA),EER_EPMRR_PF4_Y05LA_DPG,4.211,2026,4,28
 2026-04-27,Reformulated Regular Gasoline,EPMRR,Reformulated Regular Gasoline (LA),EER_EPMRR_PF4_Y05LA_DPG,4.136,2026,4,27
 2026-04-24,Reformulated Regular Gasoline,EPMRR,Reformulated Regular Gasoline (LA),EER_EPMRR_PF4_Y05LA_DPG,4.137,2026,4,24
 2026-04-23,Reformulated Regular Gasoline,EPMRR,Reformulated Regular Gasoline (LA),EER_EPMRR_PF4_Y05LA_DPG,4.126,2026,4,23
@@ -4539,12 +4545,11 @@ Date,Product,ProductID,Series,SeriesID,Price,Year,Month,Day
 2024-07-12,Reformulated Regular Gasoline,EPMRR,Reformulated Regular Gasoline (LA),EER_EPMRR_PF4_Y05LA_DPG,2.388,2024,7,12
 2024-07-11,Reformulated Regular Gasoline,EPMRR,Reformulated Regular Gasoline (LA),EER_EPMRR_PF4_Y05LA_DPG,2.405,2024,7,11
 2024-07-10,Reformulated Regular Gasoline,EPMRR,Reformulated Regular Gasoline (LA),EER_EPMRR_PF4_Y05LA_DPG,2.42,2024,7,10
-2024-07-09,Reformulated Regular Gasoline,EPMRR,Reformulated Regular Gasoline (LA),EER_EPMRR_PF4_Y05LA_DPG,2.477,2024,7,9
-2024-07-08,Reformulated Regular Gasoline,EPMRR,Reformulated Regular Gasoline (LA),EER_EPMRR_PF4_Y05LA_DPG,2.492,2024,7,8
-2024-07-05,Reformulated Regular Gasoline,EPMRR,Reformulated Regular Gasoline (LA),EER_EPMRR_PF4_Y05LA_DPG,2.529,2024,7,5
-2024-07-03,Reformulated Regular Gasoline,EPMRR,Reformulated Regular Gasoline (LA),EER_EPMRR_PF4_Y05LA_DPG,2.607,2024,7,3
-2024-07-02,Reformulated Regular Gasoline,EPMRR,Reformulated Regular Gasoline (LA),EER_EPMRR_PF4_Y05LA_DPG,2.537,2024,7,2
-2024-07-01,Reformulated Regular Gasoline,EPMRR,Reformulated Regular Gasoline (LA),EER_EPMRR_PF4_Y05LA_DPG,2.533,2024,7,1
+2026-05-04,WTI Crude Oil,EPCWTI,WTI Crude Oil,RWTC,109.76,2026,5,4
+2026-05-01,WTI Crude Oil,EPCWTI,WTI Crude Oil,RWTC,105.38,2026,5,1
+2026-04-30,WTI Crude Oil,EPCWTI,WTI Crude Oil,RWTC,108.64,2026,4,30
+2026-04-29,WTI Crude Oil,EPCWTI,WTI Crude Oil,RWTC,110.47,2026,4,29
+2026-04-28,WTI Crude Oil,EPCWTI,WTI Crude Oil,RWTC,103.45,2026,4,28
 2026-04-27,WTI Crude Oil,EPCWTI,WTI Crude Oil,RWTC,99.89,2026,4,27
 2026-04-24,WTI Crude Oil,EPCWTI,WTI Crude Oil,RWTC,98.42,2026,4,24
 2026-04-23,WTI Crude Oil,EPCWTI,WTI Crude Oil,RWTC,99.27,2026,4,23
@@ -4994,8 +4999,3 @@ Date,Product,ProductID,Series,SeriesID,Price,Year,Month,Day
 2024-07-12,WTI Crude Oil,EPCWTI,WTI Crude Oil,RWTC,83.49,2024,7,12
 2024-07-11,WTI Crude Oil,EPCWTI,WTI Crude Oil,RWTC,83.92,2024,7,11
 2024-07-10,WTI Crude Oil,EPCWTI,WTI Crude Oil,RWTC,83.39,2024,7,10
-2024-07-09,WTI Crude Oil,EPCWTI,WTI Crude Oil,RWTC,82.78,2024,7,9
-2024-07-08,WTI Crude Oil,EPCWTI,WTI Crude Oil,RWTC,83.63,2024,7,8
-2024-07-05,WTI Crude Oil,EPCWTI,WTI Crude Oil,RWTC,84.44,2024,7,5
-2024-07-03,WTI Crude Oil,EPCWTI,WTI Crude Oil,RWTC,85.19,2024,7,3
-2024-07-02,WTI Crude Oil,EPCWTI,WTI Crude Oil,RWTC,84.09,2024,7,2
