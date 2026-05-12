@@ -144,3 +144,5 @@ Archive/
 .ruff_cache/
 
 graphify-out/
+
+*.ini

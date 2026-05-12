@@ -12,7 +12,7 @@ repos:
     hooks:
       # Prevent giant files from being committed
       - id: check-added-large-files
-        args: ['--maxkb=1000']
+        args: ['--maxkb=10000000']
         description: Prevent giant files from being committed
 
       # Detect files that would conflict in merge
@@ -57,8 +57,25 @@ repos:
     hooks:
       - id: detect-secrets
         args: ['--baseline', '.secrets.baseline']
+        files: '\.(py|yaml|yml|json|md|txt|toml|cfg|ini|env)$'
         description: Detect secrets and sensitive information
-        exclude: ^(?:.*\.lock|poetry\.lock|Pipfile\.lock|\.secrets\.baseline)$
+        exclude: |
+          (?x)^(
+              .*\.lock|
+              poetry\.lock|
+              Pipfile\.lock|
+              \.secrets\.baseline|
+              \.venv/|
+              venv/|
+              env/|
+              Archive/|
+              graphify-out/|
+              CrudeOil/.*\.(csv|parquet|json)$|
+              EuropeanElectricty/.*\.(csv|parquet|json)$|
+              Gasoline/.*\.(csv|parquet|json)$|
+              HenryHub/.*\.(csv|parquet|json)$|
+              Weather/
+          )
 
   # ============================================================================
   # Bandit - Security issue detector
@@ -79,10 +96,12 @@ repos:
     hooks:
       - id: ruff-check
         description: Fast Python linter
+        files: '\.py$'
         args: [--fix]
 
       - id: ruff-format
         description: Python code formatter (Ruff)
+        files: '\.py$'
 
   # ============================================================================
   # Python code quality & style

@@ -174,6 +174,155 @@ datasets:
       - "Gasoline/parquet/eia_energy_prices.parquet"
 
 # Upload Settings
+  european_wholesale_electricity_prices:
+    enabled: true
+    source_dir: "EuropeanElectricty"
+    pre_upload:
+      script: "EuropeanElectricty/european_electricity_prices.py"
+      allow_fail: false
+    kaggle_dataset: "lakshmi2305/european-wholesale-electricity-prices"
+    kaggle_slug: "european-wholesale-electricity-prices"
+    title: "European Wholesale Electricity Prices (Hourly)"
+    subtitle: "Hourly wholesale electricity prices for 31 European countries"
+    description: |
+      Hourly wholesale electricity prices across 31 European countries from 2015 to present.
+
+      **Data Source:** European electricity market data
+      **Time Range:** 2015-01-01 to Present
+      **Unit:** EUR/MWhe
+      **Update Frequency:** Static dataset
+
+      **Countries Included:** Austria, Belgium, Bulgaria, Croatia, Czechia, Denmark, Estonia, Finland, France, Germany, Greece, Hungary, Ireland, Italy, Latvia, Lithuania, Luxembourg, Montenegro, Netherlands, North Macedonia, Norway, Poland, Portugal, Romania, Serbia, Slovakia, Slovenia, Spain, Sweden, Switzerland, United Kingdom
+
+      **Columns:**
+      - Country: Country name
+      - ISO3 Code: Three-letter country code
+      - Datetime (UTC): Timestamp in UTC
+      - Datetime (Local): Timestamp in local time
+      - Price (EUR/MWhe): Hourly wholesale electricity price
+      - Year: Year extracted from datetime
+      - Month: Month (1-12)
+      - Day: Day (1-31)
+      - Hour: Hour (0-23)
+
+      **Statistics:**
+      - Total Records: 2.8M+ rows
+      - Date Range: 2015 to present
+      - 31 countries covered
+
+      Last Updated: Static dataset
+    keywords: ["electricity", "energy", "europe", "wholesale-prices", "hourly-prices", "time-series"]
+    category: "Energy"
+    license: "CC0-1.0"
+    image: "EuropeanElectricty/assets/electricity_prices.png"
+    file_info:
+      "EuropeanElectricty/csv/european_wholesale_electricity_prices.csv":
+        description: "CSV export of hourly wholesale electricity prices (Country, ISO3 Code, Datetime UTC, Datetime Local, Price, Year, Month, Day, Hour)"
+      "EuropeanElectricty/json/european_wholesale_electricity_prices.json":
+        description: "JSON export containing hourly electricity price records"
+      "EuropeanElectricty/parquet/european_wholesale_electricity_prices.parquet":
+        description: "Parquet export for efficient analytics"
+    files:
+      - "EuropeanElectricty/csv/european_wholesale_electricity_prices.csv"
+      - "EuropeanElectricty/json/european_wholesale_electricity_prices.json"
+      - "EuropeanElectricty/parquet/european_wholesale_electricity_prices.parquet"
+
+  european_electricity_interconnection:
+    enabled: true
+    source_dir: "EuropeanElectricty"
+    pre_upload:
+      script: "EuropeanElectricty/european_interconnection.py"
+      allow_fail: false
+    kaggle_dataset: "lakshmi2305/european-electricity-interconnection"
+    kaggle_slug: "european-electricity-interconnection"
+    title: "European Electricity Interconnection Data"
+    subtitle: "Cross-border interconnection capacity, flows, and indicators for Europe"
+    description: |
+      Comprehensive European electricity interconnection data from Ember Energy, covering interconnector capacity (NTC), cross-border flows, import potential, country-level RES penetration, and peak demand projections.
+
+      **Data Source:** Ember Energy — Europe Electricity Interconnection Data Tool
+      **Reference:** https://ember-energy.org/
+
+      **Datasets Included:**
+      - **peak_demand**: Peak demand (MW) per country for 2024, 2030, 2040
+      - **interconnectors**: Net Transfer Capacity (NTC) per border for Reference, Projects, and Needs scenarios
+      - **import_potential**: Import potential (%) by country for 2024, Reference, Projects, and Needs scenarios
+      - **country_indicators**: Hourly and monthly averages of Net Position and Variable RES Penetration (%)
+      - **flow_indicators**: Hourly and monthly cross-border flow indicators (%)
+
+      **Scenarios:**
+      - Reference: 2024 baseline capacity
+      - Projects: Planned interconnection projects
+      - Needs: Required capacity to meet targets
+
+      **Time Horizons:** 2024, 2030, 2040
+
+      **Key Columns:**
+      - Country / Border: Geographic identifiers
+      - Year: Target year (2024, 2030, 2040)
+      - Category: Data type (peak_demand, interconnector, import_potential, country_indicator, flow_indicator)
+      - NTC_F / NTC_B: Forward and backward Net Transfer Capacity (MW)
+      - RES-E: Variable Renewable Energy penetration (%)
+      - NET-P: Net position indicator (%)
+      - Flow: Cross-border flow indicator
+
+      Last Updated: Static dataset
+    keywords: ["electricity", "interconnection", "europe", "ntc", "cross-border", "energy-grid", "renewable-energy", "ember-energy"]
+    category: "Energy"
+    license: "CC0-1.0"
+    image: "EuropeanElectricty/assets/interconnection.png"
+    file_info:
+      "EuropeanElectricty/csv/peak_demand.csv":
+        description: "Peak demand (MW) per country-year"
+      "EuropeanElectricty/csv/interconnectors.csv":
+        description: "Interconnector NTC capacity per border-year (Reference, Projects, Needs)"
+      "EuropeanElectricty/csv/import_potential.csv":
+        description: "Import potential (%) per country by scenario"
+      "EuropeanElectricty/csv/country_indicators.csv":
+        description: "Country-level RES-E and NET-P indicators by hour/month"
+      "EuropeanElectricty/csv/flow_indicators.csv":
+        description: "Cross-border flow indicators by hour/month"
+      "EuropeanElectricty/combined/csv/all_interconnection_data.csv":
+        description: "Combined dataset with all interconnection data across categories"
+      "EuropeanElectricty/json/peak_demand.json":
+        description: "JSON export of peak demand data"
+      "EuropeanElectricty/json/interconnectors.json":
+        description: "JSON export of interconnector NTC data"
+      "EuropeanElectricty/json/import_potential.json":
+        description: "JSON export of import potential data"
+      "EuropeanElectricty/json/country_indicators.json":
+        description: "JSON export of country indicators"
+      "EuropeanElectricty/json/flow_indicators.json":
+        description: "JSON export of flow indicators"
+      "EuropeanElectricty/parquet/peak_demand.parquet":
+        description: "Parquet export of peak demand data"
+      "EuropeanElectricty/parquet/interconnectors.parquet":
+        description: "Parquet export of interconnector NTC data"
+      "EuropeanElectricty/parquet/import_potential.parquet":
+        description: "Parquet export of import potential data"
+      "EuropeanElectricty/parquet/country_indicators.parquet":
+        description: "Parquet export of country indicators"
+      "EuropeanElectricty/parquet/flow_indicators.parquet":
+        description: "Parquet export of flow indicators"
+    files:
+      - "EuropeanElectricty/csv/peak_demand.csv"
+      - "EuropeanElectricty/csv/interconnectors.csv"
+      - "EuropeanElectricty/csv/import_potential.csv"
+      - "EuropeanElectricty/csv/country_indicators.csv"
+      - "EuropeanElectricty/csv/flow_indicators.csv"
+      - "EuropeanElectricty/combined/csv/all_interconnection_data.csv"
+      - "EuropeanElectricty/json/peak_demand.json"
+      - "EuropeanElectricty/json/interconnectors.json"
+      - "EuropeanElectricty/json/import_potential.json"
+      - "EuropeanElectricty/json/country_indicators.json"
+      - "EuropeanElectricty/json/flow_indicators.json"
+      - "EuropeanElectricty/parquet/peak_demand.parquet"
+      - "EuropeanElectricty/parquet/interconnectors.parquet"
+      - "EuropeanElectricty/parquet/import_potential.parquet"
+      - "EuropeanElectricty/parquet/country_indicators.parquet"
+      - "EuropeanElectricty/parquet/flow_indicators.parquet"
+
+# Upload Settings
 upload:
   # Create dataset if it doesn't exist (first time only)
   create_if_missing: true

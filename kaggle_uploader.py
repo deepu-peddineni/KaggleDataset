@@ -339,9 +339,25 @@ class KaggleUploader:
             self._upload_single_dataset(dataset_name, config)
 
     def _try_create_dataset_as_fallback(
-        self, tmpdir_path: Path, dataset_name: str, kaggle_slug: str
+        self, tmpdir_path: Path, dataset_name: str, kaggle_slug: str, config: dict[str, Any]
     ) -> bool:
         """Try creating dataset as fallback. Returns True if successful."""
+        create_if_missing = config.get("create_if_missing", False) or self.config.get(
+            "upload", {}
+        ).get("create_if_missing", False)
+
+        if not create_if_missing:
+            print(
+                "⚠️  Dataset not found but auto-creation is disabled. Set `create_if_missing: true` in config or `upload.create_if_missing` to enable fallback."
+            )
+            return False
+
+        if not (self.confirm_yes or self.dry_run):
+            print(
+                "✗ Dataset creation required but not confirmed. Re-run with `--yes` to allow creation."
+            )
+            return False
+
         print("⚠️  Version creation failed — attempting to create dataset as fallback...")
         is_public = self.config.get("upload", {}).get("is_public", True)
         quiet = self.config.get("upload", {}).get("quiet", False)
@@ -358,12 +374,21 @@ class KaggleUploader:
             return False
 
     def _upload_to_kaggle(
-        self, tmpdir_path: Path, kaggle_slug: str, dataset_name: str, image_path: Path | None = None
+        self,
+        tmpdir_path: Path,
+        kaggle_slug: str,
+        dataset_name: str,
+        image_path: Path | None = None,
+        config: dict[str, Any] | None = None,
     ) -> None:
         """Handle Kaggle API upload (version creation or dataset creation) with retry logic."""
         max_retries = 5
         retry_delay = 10  # seconds
         quiet = self.config.get("upload", {}).get("quiet", False)
+        config = config or {}
+        create_if_missing = config.get("create_if_missing", False) or self.config.get(
+            "upload", {}
+        ).get("create_if_missing", False)
 
         for attempt in range(1, max_retries + 1):
             try:
@@ -378,19 +403,28 @@ class KaggleUploader:
                 return
             except Exception as e:
                 error_msg = str(e).lower()
-
-                # If we get dataset-not-found or forbidden errors, try creating it immediately
-                if (
+                missing_error = (
                     "not found" in error_msg
                     or "404" in error_msg
                     or "does not exist" in error_msg
                     or "403" in error_msg
                     or "forbidden" in error_msg
-                ) and attempt == 1:
-                    print(
-                        "⚠️  Dataset not found or access denied — attempting to create new dataset..."
-                    )
-                    if self._try_create_dataset_as_fallback(tmpdir_path, dataset_name, kaggle_slug):
+                )
+
+                if missing_error and attempt == 1:
+                    if create_if_missing:
+                        print(
+                            "⚠️  Dataset not found or access denied — attempting to create new dataset..."
+                        )
+                        if self._try_create_dataset_as_fallback(
+                            tmpdir_path, dataset_name, kaggle_slug, config
+                        ):
+                            return
+                    else:
+                        print(
+                            "⚠️  Dataset not found and auto-creation is disabled. Set `create_if_missing: true` in config or upload.create_if_missing to enable fallback."
+                        )
+                        print(f"✗ Upload failed: {dataset_name} - {e}")
                         return
 
                 # On transient server errors (5xx), keep retrying version creation
@@ -512,6 +546,61 @@ class KaggleUploader:
             quiet=quiet,
         )
 
+    def _get_dataset_exists(self, kaggle_dataset: str) -> bool:
+        """Check if a Kaggle dataset exists by trying to list its files."""
+        try:
+            self.api.dataset_list_files(kaggle_dataset)
+            return True
+        except Exception:
+            return False
+
+    def _ensure_dataset_exists(
+        self,
+        tmpdir_path: Path,
+        config: dict[str, Any],
+        dataset_name: str,
+        kaggle_dataset: str,
+        image_path: Path | None = None,
+    ) -> bool:
+        """Check if dataset exists on Kaggle. If not, create it. Returns True if ready to upload."""
+        if self._get_dataset_exists(kaggle_dataset):
+            print(f"✓ Dataset exists: {kaggle_dataset}")
+            return True
+
+        create_if_missing = config.get("create_if_missing", False) or self.config.get(
+            "upload", {}
+        ).get("create_if_missing", False)
+
+        if not create_if_missing:
+            print(
+                "⚠️  Dataset does not exist and auto-creation is disabled. "
+                "Set `create_if_missing: true` in config to enable."
+            )
+            return False
+
+        if not (self.confirm_yes or self.dry_run):
+            print(
+                "✗ Dataset creation required but not confirmed. Re-run with `--yes` to allow creation."
+            )
+            return False
+
+        print(f"⚠️  Creating new dataset: {dataset_name} ({kaggle_dataset})...")
+        is_public = self.config.get("upload", {}).get("is_public", True)
+        quiet = self.config.get("upload", {}).get("quiet", False)
+        try:
+            self._run_with_filtered_stderr(
+                lambda is_public=is_public, quiet=quiet: self._create_new_dataset(
+                    tmpdir_path, is_public, quiet
+                )
+            )
+            print(f"✓ Dataset created: {dataset_name} ({kaggle_dataset})")
+            if image_path:
+                self._upload_header_image(tmpdir_path, image_path)
+            return True
+        except Exception as e:
+            print(f"✗ Failed to create dataset: {e}")
+            return False
+
     def _upload_single_dataset(self, dataset_name: str, config: dict[str, Any]) -> None:
         """Upload a single dataset to Kaggle."""
         print(f"\n{'=' * 80}")
@@ -519,55 +608,78 @@ class KaggleUploader:
         print(f"{'=' * 80}")
 
         kaggle_slug = config.get("kaggle_slug")
+        kaggle_dataset = config.get("kaggle_dataset")
         files = config.get("files", [])
 
-        # Run pre-upload script if configured (to generate/update files)
         if not self._run_pre_upload_script(config):
             print("✗ Aborting upload due to pre-upload script failure")
             return
 
-        # Validate files and print summary
         file_paths = self._collect_file_paths(files)
         if not file_paths:
             print("✗ No valid files found for upload")
             return
 
-        # Create metadata
         metadata = self._create_metadata(dataset_name, config)
 
-        # Resolve image path (project-root relative) and prepare to include it in the upload
         image_rel = config.get("image")
         image_path = None
         if image_rel:
             candidate = self.project_root / image_rel
             if candidate.exists():
                 image_path = candidate
-                # set image field in metadata to the basename so Kaggle reads it from the resources
                 metadata["image"] = image_path.name
 
-        # Upload to Kaggle
         try:
             with tempfile.TemporaryDirectory() as tmpdir:
                 tmpdir_path = Path(tmpdir)
+                self._prepare_upload_folder(tmpdir_path, file_paths, image_path, metadata, config)
 
-                # Prepare upload folder and write metadata
-                metadata_file = self._prepare_upload_folder(
-                    tmpdir_path, file_paths, image_path, metadata, config
-                )
-
-                print(f"\n📤 Uploading to Kaggle ({kaggle_slug})...")
-
-                # Dry-run: show what would happen
                 if self.dry_run:
-                    self._print_dry_run_info(metadata_file, file_paths, config, dataset_name)
+                    self._print_dry_run_info(
+                        tmpdir_path / "dataset-metadata.json", file_paths, config, dataset_name
+                    )
                     return
 
-                # Real upload
-                self._upload_to_kaggle(tmpdir_path, kaggle_slug, dataset_name, image_path)
+                self._process_existing_dataset(
+                    tmpdir_path,
+                    kaggle_slug,
+                    kaggle_dataset,
+                    dataset_name,
+                    image_path,
+                    config,
+                )
 
         except Exception as e:
             print(f"✗ Upload failed: {e}")
             return
+
+    def _process_existing_dataset(
+        self,
+        tmpdir_path: Path,
+        kaggle_slug: str,
+        kaggle_dataset: str | None,
+        dataset_name: str,
+        image_path: Path | None,
+        config: dict[str, Any],
+    ) -> None:
+        """Create or version the dataset once the upload folder is ready."""
+        was_new = False
+        if kaggle_dataset:
+            already_exists = self._get_dataset_exists(kaggle_dataset)
+            if not already_exists:
+                if not self._ensure_dataset_exists(
+                    tmpdir_path, config, dataset_name, kaggle_dataset, image_path
+                ):
+                    return
+                was_new = True
+
+        if was_new:
+            print(f"✓ First-time upload complete: {dataset_name}")
+            return
+
+        print(f"\n📤 Creating new version for dataset ({kaggle_slug})...")
+        self._upload_to_kaggle(tmpdir_path, kaggle_slug, dataset_name, image_path, config)
 
     def _get_owner(self, config: dict[str, Any]) -> str:
         """Determine dataset owner with multiple fallbacks."""
