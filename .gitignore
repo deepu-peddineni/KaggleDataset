@@ -146,3 +146,8 @@ Archive/
 graphify-out/
 
 *.ini
+
+EuropeanElectricty/**/*.csv
+EuropeanElectricty/**/*.json
+EuropeanElectricty/**/*.parquet
+EuropeanElectricty/**/*.xlsx

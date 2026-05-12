@@ -175,7 +175,7 @@ datasets:
 
 # Upload Settings
   european_wholesale_electricity_prices:
-    enabled: true
+    enabled: false
     source_dir: "EuropeanElectricty"
     pre_upload:
       script: "EuropeanElectricty/european_electricity_prices.py"
@@ -228,7 +228,7 @@ datasets:
       - "EuropeanElectricty/parquet/european_wholesale_electricity_prices.parquet"
 
   european_electricity_interconnection:
-    enabled: true
+    enabled: false
     source_dir: "EuropeanElectricty"
     pre_upload:
       script: "EuropeanElectricty/european_interconnection.py"
