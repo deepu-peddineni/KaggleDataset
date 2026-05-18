@@ -1,3 +1,14 @@
+# /// script
+# requires-python = ">=3.13"
+# dependencies = [
+#     "kagglehub>=1.0.1",
+#     "pandas>=3.0.3",
+#     "polars>=1.40.1",
+#     "pyarrow>=24.0.0",
+#     "requests>=2.34.2",
+#     "ruff>=0.15.13",
+# ]
+# ///
 """
 Kaggle Dataset Uploader
 
