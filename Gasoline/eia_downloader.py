@@ -1,3 +1,11 @@
+# /// script
+# requires-python = ">=3.13"
+# dependencies = [
+#     "polars>=1.35.2",
+#     "python-dotenv>=1.2.2",
+#     "requests>=2.32.5",
+# ]
+# ///
 """
 EIA Energy Prices Downloader & Processor
 

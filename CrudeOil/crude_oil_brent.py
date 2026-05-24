@@ -1,3 +1,12 @@
+# /// script
+# requires-python = ">=3.13"
+# dependencies = [
+#     "pandas>=2.3.3",
+#     "polars>=1.35.2",
+#     "requests>=2.32.5",
+#     "xlrd>=2.0.1",
+# ]
+# ///
 import io
 from datetime import UTC, datetime
 from pathlib import Path
@@ -5,7 +14,6 @@ from pathlib import Path
 import pandas as pd
 import polars as pl
 import requests
-
 
 # EIA Excel URL for Crude Oil Brent
 BASE_URL = "https://www.eia.gov/dnav/pet/hist_xls/RBRTEd.xls"

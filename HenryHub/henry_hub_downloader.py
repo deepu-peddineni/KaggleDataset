@@ -1,3 +1,10 @@
+# /// script
+# requires-python = ">=3.13"
+# dependencies = [
+#     "polars>=1.35.2",
+#     "requests>=2.32.5",
+# ]
+# ///
 """
 Henry Hub Natural Gas Spot Price Downloader & Processor
 
@@ -15,7 +22,6 @@ from pathlib import Path
 
 import polars as pl
 import requests
-
 
 BASE_URL = "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DHHNGSP"
 

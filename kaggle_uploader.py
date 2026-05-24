@@ -1,6 +1,7 @@
 # /// script
 # requires-python = ">=3.13"
 # dependencies = [
+#     "kaggle>=2.0.1",
 #     "kagglehub>=1.0.1",
 #     "pandas>=3.0.3",
 #     "polars>=1.40.1",
@@ -265,7 +266,8 @@ class KaggleUploader:
             print(f"✗ Pre-upload script not found: {script_rel}")
             return pre.get("allow_fail", False)
 
-        cmd = [sys.executable, str(script_path), *pre.get("args", [])]
+        # Use uv run to properly handle script dependencies
+        cmd = ["uv", "run", str(script_path), *pre.get("args", [])]
         print(f"⏳ Running pre-upload script: {' '.join(cmd)}")
         try:
             subprocess.run(cmd, check=True, cwd=str(self.project_root))
