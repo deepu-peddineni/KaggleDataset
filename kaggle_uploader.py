@@ -219,12 +219,22 @@ class KaggleUploader:
     def _collect_file_paths(self, files: list[str]) -> list[Path]:
         """Validate files exist and print a summary. Returns list of Path objects."""
         file_paths: list[Path] = []
+        pointer_files: list[str] = []
         for file in files:
             file_path = self.project_root / file
             if not file_path.exists():
                 print(f"✗ File not found: {file}")
                 continue
+            if self._is_lfs_pointer(file_path):
+                pointer_files.append(file)
+                continue
             file_paths.append(file_path)
+
+        if pointer_files:
+            print("✗ Refusing to upload Git LFS pointer files (run `git lfs pull` first):")
+            for file in pointer_files:
+                print(f"  • {file}")
+            return []
 
         if not file_paths:
             return []
@@ -235,6 +245,17 @@ class KaggleUploader:
             print(f"  • {fp.relative_to(self.project_root)} ({size_mb:.2f} MB)")
 
         return file_paths
+
+    @staticmethod
+    def _is_lfs_pointer(path: Path) -> bool:
+        """Detect a Git LFS pointer file instead of the real dataset content."""
+        try:
+            if path.stat().st_size > 1024:
+                return False
+            with path.open("rb") as handle:
+                return handle.read(64).startswith(b"version https://git-lfs.github.com/spec/")
+        except OSError:
+            return False
 
     def _resolve_image(self, config: dict[str, Any], metadata: dict) -> Path | None:
         """Resolve image path relative to project root and update metadata.image to basename."""

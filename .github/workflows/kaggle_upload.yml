@@ -45,6 +45,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # Dataset files are stored with Git LFS. Without this, the workflow
+          # would upload 130-byte pointer stubs instead of the real data.
+          lfs: true
 
       - name: Set up Python
         uses: actions/setup-python@v5
