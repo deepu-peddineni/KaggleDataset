@@ -37,7 +37,7 @@ A comprehensive Python project for downloading, processing, and exporting commod
 
 **Price Range**: $1.05 - $23.86 per Million BTU
 
-**Update Frequency**: Daily (automated via cron job)
+**Update Frequency**: Weekly (automated, Mondays at 03:17 UTC)
 
 **Columns**:
 - `Date` (date): Trading date
@@ -45,6 +45,36 @@ A comprehensive Python project for downloading, processing, and exporting commod
 - `Year` (int): Year extracted from date
 - `Month` (int): Month extracted from date (1-12)
 - `Day` (int): Day extracted from date (1-31)
+
+### Energy Trading Prices
+
+**Description**: License-clean energy trading dataset combining U.S. spot prices
+with European day-ahead electricity prices in one tidy long table.
+
+**Data Sources**:
+- U.S. Energy Information Administration (EIA) Open Data API — public domain
+- Bundesnetzagentur | SMARD.de via the Energy-Charts API (Fraunhofer ISE) —
+  CC BY 4.0
+
+**License**: CC BY 4.0 (most restrictive upstream license). See
+[`ENERGY_DATA_LICENSE_AUDIT.md`](ENERGY_DATA_LICENSE_AUDIT.md) and
+[`EnergyTrading/DATA_LICENSES.md`](EnergyTrading/DATA_LICENSES.md).
+
+**Time Range**: 1990-01-01 to Present (EIA); 2019-01-01 to Present (power)
+
+**Update Frequency**: Weekly (automated, Mondays at 03:17 UTC)
+
+**Files**: Combined table plus `eia_spot_prices` and
+`power_day_ahead_prices` extracts in CSV, JSON, and Parquet, a
+`metadata/sources.json` license manifest, and `DATA_LICENSES.md`.
+
+**Main Columns**: `TimestampUTC`, `Date`, `Frequency`, `Category`,
+`Instrument`, `InstrumentID`, `Market`, `Price`, `Unit`, `Currency`, `Source`,
+`License`, `LicenseURL`, `SourceURL`, `RetrievedAtUTC`, `Year`, `Month`, `Day`,
+`Hour`, `Minute`.
+
+Deliberately excluded for licensing reasons: FRED, ENTSO-E day-ahead prices,
+AEMO, and EPEX/EEX/Nord Pool/ICE/CME exchange data.
 
 ## 🚀 Quick Start
 
@@ -222,6 +252,23 @@ KaggleDataset/
 │   │   └── henry_hub_natural_gas.json    # JSON export (7,252 rows, 285 KB)
 │   └── parquet/
 │       └── henry_hub_natural_gas.parquet # Parquet export (7,252 rows, 28 KB)
+│
+├── EnergyTrading/
+│   ├── energy_trading_pipeline.py  # EIA + Energy-Charts downloader/exporter
+│   ├── publish_weekly.py           # Weekly build + Kaggle publish
+│   ├── DATA_LICENSES.md            # Attribution and license terms
+│   ├── README.md                   # Module usage notes
+│   ├── eia_spot_prices.csv         # EIA incremental tracker
+│   ├── power_day_ahead_prices.csv  # Power incremental tracker
+│   ├── csv/                        # CSV exports
+│   ├── json/                       # JSON exports
+│   ├── parquet/                    # Parquet exports
+│   └── metadata/
+│       └── sources.json            # Machine-readable license manifest
+│
+├── publish_all_weekly.py           # Build + publish every enabled dataset
+├── kaggle_uploader.py              # Kaggle upload engine
+├── kaggle_config.yaml              # Dataset definitions and metadata
 │
 └── .venv/                          # Virtual environment (uv venv)
 ```
@@ -574,21 +621,49 @@ mypy CrudeOil/crude_oil_brent.py
 
 ## 📅 Automation
 
+### Update every dataset in one command
+
+`publish_all_weekly.py` builds every enabled dataset in `kaggle_config.yaml`
+once, then uploads each one to Kaggle without rebuilding:
+
+```bash
+uv run python publish_all_weekly.py --yes
+```
+
+Useful variants:
+
+```bash
+# Only some datasets
+uv run python publish_all_weekly.py --yes --dataset energy_trading,crude_oil_brent
+
+# Upload the files already on disk, without downloading fresh data
+uv run python publish_all_weekly.py --skip-build --yes
+
+# Validate files without calling the Kaggle API
+uv run python publish_all_weekly.py --dry-run
+
+# Build only, do not upload
+uv run python publish_all_weekly.py --skip-upload
+```
+
+It exits non-zero if any dataset fails, so cron and CI can alert. The weekly
+GitHub Actions workflow [`kaggle_upload.yml`](.github/workflows/kaggle_upload.yml)
+runs this command every Monday at 03:17 UTC.
+
 ### Weekly Cron Job Setup
 
 ```bash
 # Edit crontab
 crontab -e
 
-# Add weekly update (Sundays at 2 AM)
-0 2 * * 0 cd /path/to/KaggleDataset && source .venv/bin/activate && python CrudeOil/crude_oil_brent.py >> cron.log 2>&1
+# Add weekly update (Mondays at 3:17 AM)
+17 3 * * 1 cd /path/to/KaggleDataset && uv run python publish_all_weekly.py --yes >> cron.log 2>&1
 ```
 
 ### Manual Update
 
 ```bash
-source .venv/bin/activate
-python CrudeOil/crude_oil_brent.py
+uv run python publish_all_weekly.py --yes --dataset crude_oil_brent
 ```
 
 ## 📊 Data Statistics

@@ -55,8 +55,8 @@ datasets:
     pre_upload:
       script: "HenryHub/henry_hub_downloader.py"
       allow_fail: false
-    kaggle_dataset: "lakshmi2305/henry-hub-version-test"
-    kaggle_slug: "henry-hub-version-test"
+    kaggle_dataset: "lakshmi2305/henry-hub-test-12345"
+    kaggle_slug: "henry-hub-test-12345"
     title: "Henry Hub Natural Gas Spot Prices"
     subtitle: "Daily natural gas spot prices from Henry Hub"
     description: |
@@ -65,7 +65,7 @@ datasets:
       **Data Source:** EIA Henry Hub Natural Gas Spot Price - Daily
       **Time Range:** 1997-01-07 to Present
       **Unit:** USD per Million BTU
-      **Update Frequency:** Daily (automated upload weekly on Fridays)
+      **Update Frequency:** Weekly (automated, Mondays at 03:17 UTC)
 
       **Files Included:**
       - CSV: Universal format for easy access
@@ -119,7 +119,7 @@ datasets:
       - Registration: https://www.eia.gov/opendata/register.php
 
       **Time Range:** 2006-05-23 to Present
-      **Update Frequency:** Daily (automated upload weekly on Mondays)
+      **Update Frequency:** Weekly (automated, Mondays at 03:17 UTC)
       **Data Format:** Daily spot prices by product
 
       **Products Included:**
@@ -321,6 +321,100 @@ datasets:
       - "EuropeanElectricty/parquet/import_potential.parquet"
       - "EuropeanElectricty/parquet/country_indicators.parquet"
       - "EuropeanElectricty/parquet/flow_indicators.parquet"
+
+  energy_trading:
+    enabled: true
+    source_dir: "EnergyTrading"
+    pre_upload:
+      script: "EnergyTrading/energy_trading_pipeline.py"
+      allow_fail: false
+    kaggle_dataset: "lakshmi2305/energy-trading-prices"
+    kaggle_slug: "energy-trading-prices"
+    title: "Energy Trading Prices - Commodities & Power"
+    subtitle: "License-clean EIA spot prices and European day-ahead electricity prices"
+    description: |
+      Daily energy trading prices built only from sources whose licenses allow
+      redistribution. U.S. spot prices and European day-ahead electricity prices
+      are combined into one tidy long table.
+
+      **Sources and licenses:**
+      - **U.S. spot prices:** U.S. Energy Information Administration (EIA),
+        public domain (U.S. Government work).
+      - **European day-ahead electricity prices:** Bundesnetzagentur | SMARD.de,
+        retrieved via the Energy-Charts API (Fraunhofer ISE), licensed under
+        CC BY 4.0.
+
+      Published under **CC BY 4.0**, the most restrictive upstream license.
+      Full attribution and change notices are in `DATA_LICENSES.md`.
+
+      **Time Range:** 1990-01-01 to Present (EIA); 2019-01-01 to Present (power)
+      **Update Frequency:** Weekly (automated, Mondays)
+      **Unit:** USD/barrel, USD/MMBtu, USD/gallon (EIA); EUR/MWh (power)
+
+      **Files:**
+      - `energy_trading_prices` — combined tidy long table (CSV, JSON, Parquet)
+      - `eia_spot_prices` — EIA spot-price extract (CSV, JSON, Parquet)
+      - `power_day_ahead_prices` — European day-ahead power extract (CSV, JSON, Parquet)
+      - `sources.json` — provenance and license manifest
+      - `DATA_LICENSES.md` — attribution and license terms
+
+      **Columns:** TimestampUTC, Date, Frequency, Category, Instrument,
+      InstrumentID, Market, Price, Unit, Currency, Source, License, LicenseURL,
+      SourceURL, RetrievedAtUTC, Year, Month, Day, Hour, Minute.
+      `Frequency` is the interval each row covers (`hourly` or `15min`). Power
+      zones changed from hourly to 15-minute settlement during 2025, so this
+      column is derived per row rather than per zone.
+
+      **Bidding zones:** DE-LU, FR, NL, BE, AT, CH, CZ, DK1, DK2, HU, IT-North,
+      NO2, PL, SE4, SI.
+
+      **Not included (license restrictions):** FRED, ENTSO-E day-ahead prices,
+      AEMO, and EPEX/EEX/Nord Pool/ICE/CME exchange data.
+
+      **Attribution:**
+      Source: U.S. Energy Information Administration (EIA).
+      Day-ahead prices: Bundesnetzagentur | SMARD.de via Energy-Charts
+      (Fraunhofer ISE), CC BY 4.0.
+
+      Last Updated: Auto-updated weekly on Mondays
+    keywords: ["energy-trading", "energy-prices", "electricity-prices", "day-ahead", "eia", "smard", "energy-charts", "crude-oil", "natural-gas", "time-series"]
+    category: "Energy"
+    license: "CC-BY-4.0"
+    file_info:
+      "EnergyTrading/csv/energy_trading_prices.csv":
+        description: "Combined tidy long table of EIA spot prices and European day-ahead power prices"
+      "EnergyTrading/json/energy_trading_prices.json":
+        description: "JSON export of the combined dataset"
+      "EnergyTrading/parquet/energy_trading_prices.parquet":
+        description: "Parquet export of the combined dataset"
+      "EnergyTrading/csv/eia_spot_prices.csv":
+        description: "EIA daily spot prices for crude oil, natural gas, and refined products"
+      "EnergyTrading/json/eia_spot_prices.json":
+        description: "JSON export of EIA spot prices"
+      "EnergyTrading/parquet/eia_spot_prices.parquet":
+        description: "Parquet export of EIA spot prices"
+      "EnergyTrading/csv/power_day_ahead_prices.csv":
+        description: "European day-ahead electricity prices by bidding zone"
+      "EnergyTrading/json/power_day_ahead_prices.json":
+        description: "JSON export of European day-ahead electricity prices"
+      "EnergyTrading/parquet/power_day_ahead_prices.parquet":
+        description: "Parquet export of European day-ahead electricity prices"
+      "EnergyTrading/metadata/sources.json":
+        description: "Machine-readable provenance, license, and excluded-source manifest"
+      "EnergyTrading/DATA_LICENSES.md":
+        description: "Attribution, license terms, and change notice"
+    files:
+      - "EnergyTrading/csv/energy_trading_prices.csv"
+      - "EnergyTrading/json/energy_trading_prices.json"
+      - "EnergyTrading/parquet/energy_trading_prices.parquet"
+      - "EnergyTrading/csv/eia_spot_prices.csv"
+      - "EnergyTrading/json/eia_spot_prices.json"
+      - "EnergyTrading/parquet/eia_spot_prices.parquet"
+      - "EnergyTrading/csv/power_day_ahead_prices.csv"
+      - "EnergyTrading/json/power_day_ahead_prices.json"
+      - "EnergyTrading/parquet/power_day_ahead_prices.parquet"
+      - "EnergyTrading/metadata/sources.json"
+      - "EnergyTrading/DATA_LICENSES.md"
 
 # Upload Settings
 upload:

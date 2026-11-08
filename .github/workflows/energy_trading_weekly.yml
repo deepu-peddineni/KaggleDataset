@@ -1,0 +1,114 @@
+name: Energy Trading Dataset (manual)
+
+# The weekly schedule is handled by "Weekly Kaggle Dataset Update"
+# (.github/workflows/kaggle_upload.yml), which updates every enabled dataset.
+# Keep this workflow for manually rebuilding just energy_trading.
+
+on:
+  workflow_dispatch:
+    inputs:
+      full:
+        description: "Rebuild the full history instead of an incremental update"
+        required: false
+        type: boolean
+        default: false
+      sources:
+        description: "Comma-separated sources to run (eia, power)"
+        required: false
+        type: string
+        default: "eia,power"
+
+concurrency:
+  group: energy-trading-weekly
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish_energy_trading:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --all-groups
+
+      - name: Configure Kaggle credentials
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+        run: |
+          if [ -z "$KAGGLE_USERNAME" ] || [ -z "$KAGGLE_KEY" ]; then
+            echo "::error::KAGGLE_USERNAME and KAGGLE_KEY secrets are required."
+            exit 1
+          fi
+          mkdir -p ~/.kaggle
+          cat > ~/.kaggle/kaggle.json <<EOF
+          {
+            "username": "$KAGGLE_USERNAME",
+            "key": "$KAGGLE_KEY"
+          }
+          EOF
+          chmod 600 ~/.kaggle/kaggle.json
+
+      - name: Build the dataset
+        env:
+          EIA_API_KEY: ${{ secrets.EIA_API_KEY || secrets.API_KEY }}
+        run: |
+          ARGS=(--sources "${{ github.event.inputs.sources || 'eia,power' }}")
+          if [ "${{ github.event.inputs.full }}" = "true" ]; then
+            ARGS+=(--full)
+          fi
+          echo "Running pipeline with: ${ARGS[*]}"
+          uv run python EnergyTrading/energy_trading_pipeline.py "${ARGS[@]}"
+
+      - name: Verify license manifest
+        run: |
+          uv run python - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path("EnergyTrading/metadata/sources.json")
+          if not path.exists():
+              raise SystemExit("Missing license manifest: " + str(path))
+          manifest = json.loads(path.read_text(encoding="utf-8"))
+          for source in manifest["sources"]:
+              if not source.get("redistribution_allowed"):
+                  raise SystemExit(
+                      f"Refusing to publish: {source['name']} does not allow redistribution"
+                  )
+          print(f"License manifest OK ({len(manifest['sources'])} sources)")
+          PY
+
+      - name: Publish to Kaggle
+        env:
+          SKIP_PRE_UPLOAD: "1"
+        run: uv run python kaggle_uploader.py --dataset energy_trading --yes
+
+      - name: Summarise
+        if: success()
+        run: |
+          echo "✓ Energy Trading dataset published"
+          echo "https://www.kaggle.com/datasets/lakshmi2305/energy-trading-prices"
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "::error::Energy Trading weekly publish failed. See the logs above."
+          exit 1

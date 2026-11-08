@@ -1,33 +1,44 @@
-name: Weekly Kaggle Dataset Upload
+name: Weekly Kaggle Dataset Update
+
+# One schedule updates every enabled dataset in kaggle_config.yaml.
+# The heavy lifting lives in publish_all_weekly.py, which builds each dataset
+# once and then uploads it without rebuilding.
 
 on:
   schedule:
-    # Every Monday at 2 AM UTC (after Crude Oil update - typically Friday)
-    - cron: "0 2 * * 1"
-    # Every Friday at 2 AM UTC (after Henry Hub daily data collection)
-    - cron: "0 2 * * 5"
+    # Every Monday at 03:17 UTC. Off-peak and offset from other jobs.
+    - cron: "17 3 * * 1"
 
-  # Manual trigger
   workflow_dispatch:
     inputs:
       dataset:
-        description: "Dataset to upload (leave empty for all enabled)"
+        description: "Dataset name(s), comma-separated. Leave empty for all enabled."
         required: false
         type: string
+        default: ""
+      skip_build:
+        description: "Upload existing files without rebuilding the data"
+        required: false
+        type: boolean
+        default: false
+      dry_run:
+        description: "Validate files without calling the Kaggle API"
+        required: false
+        type: boolean
+        default: false
 
-  # Also run on successful data download (optional)
-  workflow_run:
-    workflows: ["Download Latest Data"]
-    types: [completed]
-    branches: [master]
+concurrency:
+  group: kaggle-weekly-update
+  cancel-in-progress: false
+
+permissions:
+  contents: read
 
 jobs:
-  upload_to_kaggle:
+  publish_all:
+    name: Build and publish datasets
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-
-    permissions:
-      contents: read
+    timeout-minutes: 90
 
     steps:
       - name: Checkout repository
@@ -43,13 +54,21 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v3
         with:
-          enable-cache: false
+          enable-cache: true
 
-      - name: Set up Kaggle credentials
+      - name: Install dependencies
+        run: uv sync --all-groups
+
+      - name: Configure Kaggle credentials
         env:
           KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
           KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
         run: |
+          if [ "$DRY_RUN" != "true" ] && { [ -z "$KAGGLE_USERNAME" ] || [ -z "$KAGGLE_KEY" ]; }; then
+            echo "::error::KAGGLE_USERNAME and KAGGLE_KEY secrets are required."
+            exit 1
+          fi
           mkdir -p ~/.kaggle
           cat > ~/.kaggle/kaggle.json <<EOF
           {
@@ -60,140 +79,47 @@ jobs:
           chmod 600 ~/.kaggle/kaggle.json
           echo "✓ Kaggle credentials configured"
 
-      - name: Determine which datasets to upload
-        id: datasets
+      - name: Update all datasets
+        env:
+          EIA_API_KEY: ${{ secrets.EIA_API_KEY || secrets.API_KEY }}
+          DATASETS: ${{ github.event.inputs.dataset }}
+          SKIP_BUILD: ${{ github.event.inputs.skip_build }}
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
         run: |
-          if [ "${{ github.event.schedule }}" == "0 2 * * 1" ]; then
-            echo "day=Monday"
-            echo "datasets=crude_oil_brent"
-            echo "message=Uploading Crude Oil data (Monday)"
-          elif [ "${{ github.event.schedule }}" == "0 2 * * 5" ]; then
-            echo "day=Friday"
-            echo "datasets=henry_hub_natural_gas"
-            echo "message=Uploading Henry Hub Natural Gas data (Friday)"
+          ARGS=(--yes)
+          if [ -n "$DATASETS" ]; then ARGS+=(--dataset "$DATASETS"); fi
+          if [ "$SKIP_BUILD" = "true" ]; then ARGS+=(--skip-build); fi
+          if [ "$DRY_RUN" = "true" ]; then ARGS+=(--dry-run); fi
+          echo "Running: uv run python publish_all_weekly.py ${ARGS[*]}"
+          uv run python publish_all_weekly.py "${ARGS[@]}"
+
+      - name: Verify license manifest
+        env:
+          DATASETS: ${{ github.event.inputs.dataset }}
+        run: |
+          if [ -f EnergyTrading/metadata/sources.json ]; then
+            uv run python - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path("EnergyTrading/metadata/sources.json")
+          manifest = json.loads(path.read_text(encoding="utf-8"))
+          for source in manifest["sources"]:
+              if not source.get("redistribution_allowed"):
+                  raise SystemExit(
+                      f"Refusing to publish: {source['name']} does not allow redistribution"
+                  )
+          print(f"License manifest OK ({len(manifest['sources'])} sources)")
+          PY
+          elif [ -z "$DATASETS" ] || echo "$DATASETS" | grep -q "energy_trading"; then
+            echo "::error::energy_trading was selected but its license manifest is missing."
+            exit 1
           else
-            echo "day=Manual"
-            echo "datasets=${{ github.event.inputs.dataset }}"
-            echo "message=Manual upload triggered"
+            echo "Skipping license check (energy_trading not selected)."
           fi
-
-      - name: Install dependencies
-        run: |
-          uv sync --all-groups --refresh
-
-      - name: Download latest data
-        run: |
-          echo "📥 Downloading latest data..."
-          uv run python CrudeOil/crude_oil_brent.py
-          uv run python HenryHub/henry_hub_downloader.py
-        continue-on-error: true
-
-      - name: Upload to Kaggle
-        run: |
-          echo "📤 Uploading datasets to Kaggle..."
-          if [ -z "${{ github.event.inputs.dataset }}" ]; then
-            uv run python kaggle_uploader.py --yes
-          else
-            uv run python kaggle_uploader.py --dataset "${{ github.event.inputs.dataset }}" --yes
-          fi
-
-      - name: Verify upload
-        run: |
-          echo "✓ Upload completed successfully"
-          echo "Datasets available at: https://kaggle.com/datasets/lakshmi2305"
-
-      - name: Create deployment annotation
-        if: success()
-        run: |
-          cat > /tmp/upload_summary.txt <<EOF
-          Upload Summary
-          ==============
-          Timestamp: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
-          Datasets: ${{ steps.datasets.outputs.datasets }}
-          Status: Success
-          EOF
-          cat /tmp/upload_summary.txt
 
       - name: Notify on failure
         if: failure()
         run: |
-          echo "❌ Upload failed!"
-          echo "Check the logs above for details"
+          echo "::error::Weekly dataset update failed. See the logs above."
           exit 1
-
-  # Separate jobs for different datasets (optional - for better visibility)
-  upload_crude_oil:
-    runs-on: ubuntu-latest
-    if: github.event.schedule == '0 2 * * 1' || (github.event_name == 'workflow_dispatch' && contains(github.event.inputs.dataset, 'crude'))
-    timeout-minutes: 20
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v3
-        with:
-          enable-cache: true
-
-      - name: Configure Kaggle
-        env:
-          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
-          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
-        run: |
-          mkdir -p ~/.kaggle
-          cat > ~/.kaggle/kaggle.json <<EOF
-          {
-            "username": "$KAGGLE_USERNAME",
-            "key": "$KAGGLE_KEY"
-          }
-          EOF
-          chmod 600 ~/.kaggle/kaggle.json
-
-      - name: Upload Crude Oil Dataset
-        run: |
-          uv sync --all-groups --refresh
-          uv run python kaggle_uploader.py --dataset crude_oil_brent --yes
-
-  upload_henry_hub:
-    runs-on: ubuntu-latest
-    if: github.event.schedule == '0 2 * * 5' || (github.event_name == 'workflow_dispatch' && contains(github.event.inputs.dataset, 'henry'))
-    timeout-minutes: 20
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v3
-        with:
-          enable-cache: true
-
-      - name: Configure Kaggle
-        env:
-          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
-          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
-        run: |
-          mkdir -p ~/.kaggle
-          cat > ~/.kaggle/kaggle.json <<EOF
-          {
-            "username": "$KAGGLE_USERNAME",
-            "key": "$KAGGLE_KEY"
-          }
-          EOF
-          chmod 600 ~/.kaggle/kaggle.json
-
-      - name: Upload Henry Hub Dataset
-        run: |
-          uv sync --all-groups --refresh
-          uv run python kaggle_uploader.py --dataset henry_hub_natural_gas --yes

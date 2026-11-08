@@ -151,3 +151,21 @@ EuropeanElectricty/**/*.csv
 EuropeanElectricty/**/*.json
 EuropeanElectricty/**/*.parquet
 EuropeanElectricty/**/*.xlsx
+
+# ============================================================================
+# Generated dataset exports (rebuilt by the pipelines, too large for git)
+# ============================================================================
+EnergyTrading/csv/
+EnergyTrading/json/
+EnergyTrading/parquet/
+EnergyTrading/eia_spot_prices.csv
+EnergyTrading/power_day_ahead_prices.csv
+EnergyTrading/metadata/sources.json
+
+# ============================================================================
+# Kaggle uploader / tool caches
+# ============================================================================
+kaggle_uploader.py.lock
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
