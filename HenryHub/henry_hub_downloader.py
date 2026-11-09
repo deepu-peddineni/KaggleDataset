@@ -23,6 +23,7 @@ from pathlib import Path
 import polars as pl
 import requests
 
+
 BASE_URL = "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DHHNGSP"
 
 
@@ -190,12 +191,12 @@ def main():
     csv_content = download_henry_hub_data()
     if not csv_content:
         print("Exiting due to download failure")
-        return
+        raise SystemExit(1)
 
     df = parse_csv_data(csv_content)
     if df is None or df.is_empty():
         print("Exiting due to parsing failure")
-        return
+        raise SystemExit(1)
 
     display_sample_data(df)
 

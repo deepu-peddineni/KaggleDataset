@@ -37,12 +37,15 @@ import polars as pl
 import requests
 from dotenv import load_dotenv
 
-# Load API key from .env file
+
+# Load API key from the environment (CI) or a local .env file.
 load_dotenv()
-EIA_API_KEY = os.getenv("API_KEY")
+EIA_API_KEY = os.getenv("EIA_API_KEY") or os.getenv("API_KEY")
 
 if not EIA_API_KEY:
-    raise ValueError("API_KEY not found in .env file. Please add your EIA API key.")
+    raise ValueError(
+        "EIA API key not found. Set EIA_API_KEY (or API_KEY) in the environment or .env file."
+    )
 
 BASE_URL = "https://api.eia.gov/v2"
 
@@ -455,7 +458,7 @@ def main():
 
     if not json_content:
         print("Exiting due to download failure")
-        return
+        raise SystemExit(1)
 
     # Step 3: Parse data
     print("\nStep 3: Parsing data...")
@@ -464,7 +467,7 @@ def main():
     )
     if df is None or df.is_empty():
         print("Exiting due to parsing failure")
-        return
+        raise SystemExit(1)
 
     # Step 4: Display sample data
     print("\nStep 4: Displaying sample data...")

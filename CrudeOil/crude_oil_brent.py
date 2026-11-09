@@ -3,6 +3,7 @@
 # dependencies = [
 #     "pandas>=2.3.3",
 #     "polars>=1.35.2",
+#     "pyarrow>=22.0.0",
 #     "requests>=2.32.5",
 #     "xlrd>=2.0.1",
 # ]
@@ -14,6 +15,7 @@ from pathlib import Path
 import pandas as pd
 import polars as pl
 import requests
+
 
 # EIA Excel URL for Crude Oil Brent
 BASE_URL = "https://www.eia.gov/dnav/pet/hist_xls/RBRTEd.xls"
@@ -231,13 +233,13 @@ def main():
     excel_content = download_crude_oil_data()
     if not excel_content:
         print("Exiting due to download failure")
-        return
+        raise SystemExit(1)
 
     # Parse Excel and add date components
     df = parse_excel_data(excel_content)
     if df is None or df.is_empty():
         print("Exiting due to parsing failure")
-        return
+        raise SystemExit(1)
 
     # Display sample data
     display_sample_data(df)
