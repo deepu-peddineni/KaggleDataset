@@ -690,7 +690,25 @@ uv run python publish_all_weekly.py --yes --dataset crude_oil_brent
 
 ## 🔐 Environment Variables
 
-No API key required for FRED public data. All requests are unauthenticated GET requests.
+FRED and Energy-Charts data need no API key. The EIA Open Data API key is needed
+only for the `energy_trading` and `wti_crude_oil` datasets.
+
+**Locally**, put it in `.env` (gitignored):
+
+```dotenv
+EIA_API_KEY=your-key-here
+```
+
+**In CI**, store it as the `EIA_API_KEY` repository secret. The workflows inject
+it as an environment variable at runtime — it is never written into the
+workspace or committed, and GitHub masks it in logs:
+
+```bash
+gh secret set EIA_API_KEY --repo deepu-peddineni/KaggleDataset
+```
+
+The scheduled job fails fast with a clear error if the secret is missing when
+`energy_trading` or `wti_crude_oil` needs to be built.
 
 ## ⚡ uv Best Practices
 

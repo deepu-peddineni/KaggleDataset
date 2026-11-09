@@ -82,6 +82,31 @@ jobs:
           chmod 600 ~/.kaggle/kaggle.json
           echo "✓ Kaggle credentials configured"
 
+      - name: Validate EIA API key
+        env:
+          EIA_API_KEY: ${{ secrets.EIA_API_KEY || secrets.API_KEY }}
+          DATASETS: ${{ github.event.inputs.dataset }}
+          SKIP_BUILD: ${{ github.event.inputs.skip_build }}
+        run: |
+          # The key is only ever injected from repository secrets; it is never
+          # written to a file in the workspace or committed to the repository.
+          if [ "$SKIP_BUILD" = "true" ]; then
+            echo "✓ Build skipped; EIA API key not required."
+            exit 0
+          fi
+          case ",$DATASETS," in
+            ",,"|*",energy_trading,"*|*",wti_crude_oil,"*)
+              if [ -z "$EIA_API_KEY" ]; then
+                echo "::error::EIA_API_KEY repository secret is required to build energy_trading or wti_crude_oil."
+                exit 1
+              fi
+              echo "✓ EIA API key provided via repository secret (value masked)."
+              ;;
+            *)
+              echo "✓ Selected datasets do not need an EIA API key."
+              ;;
+          esac
+
       - name: Update all datasets
         env:
           EIA_API_KEY: ${{ secrets.EIA_API_KEY || secrets.API_KEY }}

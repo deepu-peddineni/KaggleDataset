@@ -40,14 +40,22 @@ computed per row.
 uv sync --all-groups
 ```
 
-Add an EIA API key (free: https://www.eia.gov/opendata/register.php) to the
-repository `.env`:
+Add an EIA API key (free: https://www.eia.gov/opendata/register.php) to your
+local `.env` (which is gitignored):
 
 ```dotenv
 EIA_API_KEY=your-key-here
 ```
 
 `API_KEY` is also accepted for backward compatibility.
+
+In CI the key is never written to disk: the workflow injects the
+`EIA_API_KEY` repository secret as an environment variable, and GitHub masks
+it in logs. Set or rotate it with:
+
+```bash
+gh secret set EIA_API_KEY --repo deepu-peddineni/KaggleDataset
+```
 
 ## Usage
 
